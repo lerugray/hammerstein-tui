@@ -52,9 +52,9 @@ impl From<ProviderArg> for ProviderKind {
 
 #[derive(Debug, Parser)]
 #[command(
-    name = "deepseek",
-    version = env!("DEEPSEEK_BUILD_VERSION"),
-    bin_name = "deepseek",
+    name = "hammerstein",
+    version = env!("HAMMERSTEIN_BUILD_VERSION"),
+    bin_name = "hammerstein",
     override_usage = "deepseek [OPTIONS] [PROMPT]\n       deepseek [OPTIONS] <COMMAND> [ARGS]"
 )]
 struct Cli {
@@ -1447,7 +1447,7 @@ fn build_tui_command(
 fn exit_with_tui_status(status: std::process::ExitStatus) -> Result<()> {
     match status.code() {
         Some(code) => std::process::exit(code),
-        None => bail!("deepseek-tui terminated by signal"),
+        None => bail!("hammerstein-tui terminated by signal"),
     }
 }
 
@@ -1459,7 +1459,7 @@ fn delegate_simple_tui(args: Vec<String>) -> Result<()> {
         .map_err(|err| anyhow!("{}", tui_spawn_error(&tui, &err)))?;
     match status.code() {
         Some(code) => std::process::exit(code),
-        None => bail!("deepseek-tui terminated by signal"),
+        None => bail!("hammerstein-tui terminated by signal"),
     }
 }
 
@@ -1467,20 +1467,20 @@ fn tui_spawn_error(tui: &Path, err: &io::Error) -> String {
     format!(
         "failed to spawn companion TUI binary at {}: {err}\n\
 \n\
-The `deepseek` dispatcher found a `deepseek-tui` file, but the OS refused \
+The `deepseek` dispatcher found a `hammerstein-tui` file, but the OS refused \
 to execute it. Common fixes:\n\
   - Reinstall with `npm install -g deepseek-tui`, or run `deepseek update`.\n\
   - On Windows, run `where deepseek` and `where deepseek-tui`; both should \
 come from the same install directory.\n\
   - If you downloaded release assets manually, keep both `deepseek` and \
-`deepseek-tui` binaries together and make sure the TUI binary is executable.\n\
-  - Set DEEPSEEK_TUI_BIN to the absolute path of a working `deepseek-tui` \
+`hammerstein-tui` binaries together and make sure the TUI binary is executable.\n\
+  - Set DEEPSEEK_TUI_BIN to the absolute path of a working `hammerstein-tui` \
 binary.",
         tui.display()
     )
 }
 
-/// Resolve the sibling `deepseek-tui` executable next to the running
+/// Resolve the sibling `hammerstein-tui` executable next to the running
 /// dispatcher. Honours platform executable suffix (`.exe` on Windows) so
 /// the npm-distributed Windows package — which ships
 /// `bin/downloads/deepseek-tui.exe` — is found by `Path::exists` (#247).
@@ -1508,38 +1508,38 @@ fn locate_sibling_tui_binary() -> Result<PathBuf> {
 
     // Build a stable error path so the user sees the platform-correct
     // expected name, not "deepseek-tui" on Windows.
-    let expected = current.with_file_name(format!("deepseek-tui{}", std::env::consts::EXE_SUFFIX));
+    let expected = current.with_file_name(format!("hammerstein-tui{}", std::env::consts::EXE_SUFFIX));
     bail!(
-        "Companion `deepseek-tui` binary not found at {}.\n\
+        "Companion `hammerstein-tui` binary not found at {}.\n\
 \n\
 The `deepseek` dispatcher delegates interactive sessions to a sibling \
-`deepseek-tui` binary. To fix this, install one of:\n\
+`hammerstein-tui` binary. To fix this, install one of:\n\
   • npm:    npm install -g deepseek-tui            (downloads both binaries)\n\
   • cargo:  cargo install deepseek-tui-cli deepseek-tui --locked\n\
   • GitHub Releases: download BOTH `deepseek-<platform>` AND \
 `deepseek-tui-<platform>` from https://github.com/Hmbown/DeepSeek-TUI/releases/latest \
 and place them in the same directory.\n\
 \n\
-Or set DEEPSEEK_TUI_BIN to the absolute path of an existing `deepseek-tui` binary.",
+Or set DEEPSEEK_TUI_BIN to the absolute path of an existing `hammerstein-tui` binary.",
         expected.display()
     );
 }
 
 /// Return the first existing sibling-binary path under any of the names
-/// `deepseek-tui` might use on this platform. Pure function to keep
+/// `hammerstein-tui` might use on this platform. Pure function to keep
 /// `locate_sibling_tui_binary` testable.
 fn sibling_tui_candidate(dispatcher: &Path) -> Option<PathBuf> {
     // Primary: platform-correct name. EXE_SUFFIX is "" on Unix and ".exe"
     // on Windows.
     let primary =
-        dispatcher.with_file_name(format!("deepseek-tui{}", std::env::consts::EXE_SUFFIX));
+        dispatcher.with_file_name(format!("hammerstein-tui{}", std::env::consts::EXE_SUFFIX));
     if primary.is_file() {
         return Some(primary);
     }
     // Windows fallback: a user who manually renamed `.exe` away (per the
     // workaround in #247) still launches successfully under the new code.
     if cfg!(windows) {
-        let suffixless = dispatcher.with_file_name("deepseek-tui");
+        let suffixless = dispatcher.with_file_name("hammerstein-tui");
         if suffixless.is_file() {
             return Some(suffixless);
         }
@@ -2633,7 +2633,7 @@ mod tests {
 
     /// Regression for issue #247: on Windows the dispatcher must find the
     /// sibling `deepseek-tui.exe`, not bail out looking for an
-    /// extension-less `deepseek-tui`. The candidate resolver also accepts
+    /// extension-less `hammerstein-tui`. The candidate resolver also accepts
     /// the suffix-less name on Windows so users who manually renamed the
     /// file as a workaround keep working after the upgrade.
     #[test]
@@ -2650,7 +2650,7 @@ mod tests {
         assert!(sibling_tui_candidate(&dispatcher).is_none());
 
         let target =
-            dispatcher.with_file_name(format!("deepseek-tui{}", std::env::consts::EXE_SUFFIX));
+            dispatcher.with_file_name(format!("hammerstein-tui{}", std::env::consts::EXE_SUFFIX));
         std::fs::write(&target, b"").unwrap();
 
         let found = sibling_tui_candidate(&dispatcher).expect("must locate sibling");
@@ -2680,7 +2680,7 @@ mod tests {
         std::fs::write(&dispatcher, b"").unwrap();
 
         // Only the suffixless name exists — emulates the manual rename.
-        let suffixless = dispatcher.with_file_name("deepseek-tui");
+        let suffixless = dispatcher.with_file_name("hammerstein-tui");
         std::fs::write(&suffixless, b"").unwrap();
 
         let found = sibling_tui_candidate(&dispatcher)

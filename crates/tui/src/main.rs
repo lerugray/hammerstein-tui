@@ -94,11 +94,11 @@ fn configure_windows_console_utf8() {}
 
 #[derive(Parser, Debug)]
 #[command(
-    name = "deepseek",
+    name = "hammerstein",
     author,
-    version = env!("DEEPSEEK_BUILD_VERSION"),
-    about = "DeepSeek TUI/CLI for DeepSeek models",
-    long_about = "Terminal-native TUI and CLI for DeepSeek models.\n\nRun 'deepseek' to start.\n\nNot affiliated with DeepSeek Inc."
+    version = env!("HAMMERSTEIN_BUILD_VERSION"),
+    about = "Hammerstein TUI — strategic reasoning terminal",
+    long_about = "Terminal-native TUI for strategic reasoning and code dispatch.\n\nRun `hamt` to start.\n\nBuilt on the Hammerstein framework. Fork of DeepSeek-TUI (MIT)."
 )]
 struct Cli {
     /// Subcommand to run
@@ -1525,7 +1525,7 @@ async fn run_doctor(config: &Config, workspace: &Path, config_path_override: Opt
 
     println!(
         "{}",
-        "DeepSeek TUI Doctor"
+        "Hammerstein TUI Doctor"
             .truecolor(blue_r, blue_g, blue_b)
             .bold()
     );
@@ -1534,7 +1534,7 @@ async fn run_doctor(config: &Config, workspace: &Path, config_path_override: Opt
 
     // Version info
     println!("{}", "Version Information:".bold());
-    println!("  deepseek-tui: {}", env!("DEEPSEEK_BUILD_VERSION"));
+    println!("  deepseek-tui: {}", env!("HAMMERSTEIN_BUILD_VERSION"));
     println!("  rust: {}", rustc_version());
     println!();
 

@@ -1,21 +1,22 @@
 #!/usr/bin/env bash
-# hammerstein-tui — Hammerstein-branded launcher for the TUI
-# Wraps deepseek-tui with Hammerstein config paths and env vars.
-# Install: ln -s $(pwd)/scripts/hammerstein-tui ~/.local/bin/hammerstein-tui
-
+# hamt / hammerstein-tui — Hammerstein-branded launcher
 set -euo pipefail
 
-# Config lives under ~/.hammerstein/tui/ (separate from Hammerstein CLI at ~/.hammerstein/)
-export DEEPSEEK_CONFIG_PATH="${HAMMERSTEIN_CONFIG_PATH:-$HOME/.hammerstein/tui/config.toml}"
+# Set terminal title
+printf '\033]0;Hammerstein TUI\007'
 
-# Forward Hammerstein-prefixed env vars to deepseek-tui equivalents
-# This lets users set HAMMERSTEIN_API_KEY and have it work
+# Config and env
+export DEEPSEEK_CONFIG_PATH="${HAMMERSTEIN_CONFIG_PATH:-$HOME/.hammerstein/tui/config.toml}"
 [ -n "${HAMMERSTEIN_API_KEY:-}" ] && export DEEPSEEK_API_KEY="$HAMMERSTEIN_API_KEY"
 [ -n "${HAMMERSTEIN_MODEL:-}" ] && export DEEPSEEK_MODEL="$HAMMERSTEIN_MODEL"
 [ -n "${HAMMERSTEIN_PROVIDER:-}" ] && export DEEPSEEK_PROVIDER="$HAMMERSTEIN_PROVIDER"
 [ -n "${HAMMERSTEIN_BASE_URL:-}" ] && export DEEPSEEK_BASE_URL="$HAMMERSTEIN_BASE_URL"
-
-# Ensure config dir exists
 mkdir -p "$HOME/.hammerstein/tui"
 
+# Use our built binary if available, otherwise fall back to system deepseek-tui
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+BUILT_BIN="$SCRIPT_DIR/../target/release/hammerstein-tui"
+if [ -x "$BUILT_BIN" ]; then
+    exec "$BUILT_BIN" "$@"
+fi
 exec deepseek-tui "$@"

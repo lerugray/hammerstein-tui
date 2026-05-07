@@ -9,7 +9,7 @@ fn main() {
         .map(|sha| format!("{package_version} ({sha})"))
         .unwrap_or_else(|| package_version.to_string());
 
-    println!("cargo:rustc-env=DEEPSEEK_BUILD_VERSION={build_version}");
+    println!("cargo:rustc-env=HAMMERSTEIN_BUILD_VERSION={build_version}");
 }
 
 fn build_sha() -> Option<String> {

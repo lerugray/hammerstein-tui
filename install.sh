@@ -26,7 +26,7 @@ mkdir -p "$INSTALL_DIR"
 
 # 3. Find the repo (where this install script lives)
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+REPO_DIR="$(cd "$SCRIPT_DIR" && pwd)"
 
 # 4. Install symlinks
 WRAPPER="$REPO_DIR/scripts/hammerstein-tui"

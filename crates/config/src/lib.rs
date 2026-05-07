@@ -292,7 +292,7 @@ pub struct LspConfigToml {
 }
 
 impl ConfigToml {
-    /// Merge project-level overrides from `$WORKSPACE/.deepseek/config.toml`.
+    /// Merge project-level overrides from `$WORKSPACE/.hammerstein/tui/config.toml`.
     /// Only populated fields in `project` are applied; everything else
     /// keeps its global value. Provider-specific sub-tables are merged
     /// field-by-field so a project can set just `providers.deepseek.model`
@@ -978,10 +978,10 @@ fn merge_provider_config(target: &mut ProviderConfigToml, source: &ProviderConfi
     }
 }
 
-/// Load a project-level config from `$WORKSPACE/.deepseek/config.toml`.
+/// Load a project-level config from `$WORKSPACE/.hammerstein/tui/config.toml`.
 /// Returns `None` if the file doesn't exist or can't be parsed.
 pub fn load_project_config(workspace: &Path) -> Option<ConfigToml> {
-    let path = workspace.join(".deepseek").join(CONFIG_FILE_NAME);
+    let path = workspace.join(".hammerstein/tui").join(CONFIG_FILE_NAME);
     if !path.exists() {
         return None;
     }
@@ -1238,7 +1238,7 @@ pub fn resolve_config_path(explicit: Option<PathBuf>) -> Result<PathBuf> {
 
 pub fn default_config_path() -> Result<PathBuf> {
     let home = dirs::home_dir().context("failed to resolve home directory for config path")?;
-    Ok(home.join(".deepseek").join(CONFIG_FILE_NAME))
+    Ok(home.join(".hammerstein/tui").join(CONFIG_FILE_NAME))
 }
 
 fn parse_bool(raw: &str) -> Result<bool> {

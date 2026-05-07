@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# hammerstein-dispatch — audit-first dispatch for the Hammerstein TUI
+# Usage: hammerstein-dispatch "fix the auth flow to handle expired tokens"
+# 
+# Runs hammerstein audit pre-flight, then dispatches via hd.
+# Callable from hammerstein-tui via: !hammerstein-dispatch "task"
+
+set -euo pipefail
+
+TASK="${1:-}"
+if [ -z "$TASK" ]; then
+    echo "Usage: hammerstein-dispatch \"<task description>\""
+    exit 1
+fi
+
+echo "=== Hammerstein Dispatch ==="
+echo "Task: $TASK"
+echo ""
+
+# Run audit pre-flight via hammerstein CLI
+echo "--- Audit pre-flight ---"
+AUDIT_OUTPUT=$(hammerstein --template audit-this-plan --log /tmp/hammerstein-calls.jsonl "$TASK" 2>&1) || true
+echo "$AUDIT_OUTPUT"
+echo ""
+
+# Extract the plain English summary for quick review
+PLAIN_ENGLISH=$(echo "$AUDIT_OUTPUT" | sed -n '/^\*\*Plain English summary:\*\*/,/^---$/p' | head -20)
+if [ -n "$PLAIN_ENGLISH" ]; then
+    echo "$PLAIN_ENGLISH"
+    echo ""
+fi
+
+# Dispatch via hd
+echo "--- Dispatching via hd ---"
+exec hd "$TASK"

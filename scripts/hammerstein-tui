@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# hammerstein-tui — Hammerstein-branded launcher for the TUI
+# Wraps deepseek-tui with Hammerstein config paths and env vars.
+# Install: ln -s $(pwd)/scripts/hammerstein-tui ~/.local/bin/hammerstein-tui
+
+set -euo pipefail
+
+# Config lives under ~/.hammerstein/tui/ (separate from Hammerstein CLI at ~/.hammerstein/)
+export DEEPSEEK_CONFIG_PATH="${HAMMERSTEIN_CONFIG_PATH:-$HOME/.hammerstein/tui/config.toml}"
+
+# Forward Hammerstein-prefixed env vars to deepseek-tui equivalents
+# This lets users set HAMMERSTEIN_API_KEY and have it work
+[ -n "${HAMMERSTEIN_API_KEY:-}" ] && export DEEPSEEK_API_KEY="$HAMMERSTEIN_API_KEY"
+[ -n "${HAMMERSTEIN_MODEL:-}" ] && export DEEPSEEK_MODEL="$HAMMERSTEIN_MODEL"
+[ -n "${HAMMERSTEIN_PROVIDER:-}" ] && export DEEPSEEK_PROVIDER="$HAMMERSTEIN_PROVIDER"
+[ -n "${HAMMERSTEIN_BASE_URL:-}" ] && export DEEPSEEK_BASE_URL="$HAMMERSTEIN_BASE_URL"
+
+# Ensure config dir exists
+mkdir -p "$HOME/.hammerstein/tui"
+
+exec deepseek-tui "$@"

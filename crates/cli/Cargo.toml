@@ -1,5 +1,5 @@
 [package]
-name = "deepseek-tui-cli"
+name = "hammerstein-tui-cli"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -7,7 +7,7 @@ repository.workspace = true
 description = "Codex-style CLI facade for DeepSeek workspace architecture"
 
 [[bin]]
-name = "deepseek"
+name = "hammerstein"
 path = "src/main.rs"
 
 [dependencies]

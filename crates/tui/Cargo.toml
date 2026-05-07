@@ -1,11 +1,11 @@
 [package]
-name = "deepseek-tui"
+name = "hammerstein-tui"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "Terminal UI for DeepSeek"
-default-run = "deepseek-tui"
+default-run = "hammerstein-tui"
 
 [features]
 default = ["tui", "json", "toml"]
@@ -15,7 +15,7 @@ json = ["schemaui/json"]
 toml = ["schemaui/toml"]
 
 [[bin]]
-name = "deepseek-tui"
+name = "hammerstein-tui"
 path = "src/main.rs"
 
 [dependencies]

@@ -7,6 +7,7 @@ printf '\033]0;Hammerstein TUI\007'
 
 # Config and env
 export DEEPSEEK_CONFIG_PATH="${HAMMERSTEIN_CONFIG_PATH:-$HOME/.hammerstein/tui/config.toml}"
+export HAMMERSTEIN_THEME=1
 [ -n "${HAMMERSTEIN_API_KEY:-}" ] && export DEEPSEEK_API_KEY="$HAMMERSTEIN_API_KEY"
 [ -n "${HAMMERSTEIN_MODEL:-}" ] && export DEEPSEEK_MODEL="$HAMMERSTEIN_MODEL"
 [ -n "${HAMMERSTEIN_PROVIDER:-}" ] && export DEEPSEEK_PROVIDER="$HAMMERSTEIN_PROVIDER"

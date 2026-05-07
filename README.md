@@ -1,3 +1,5 @@
+![Hammerstein TUI — Strategic reasoning terminal. Built on the Hammerstein framework.](docs/images/banner.png)
+
 # Hammerstein TUI
 
 A terminal-native TUI for strategic reasoning and code dispatch, built on the [Hammerstein framework](https://github.com/lerugray/hammerstein). Forked from [DeepSeek-TUI](https://github.com/Hmbown/DeepSeek-TUI) (MIT) and rebranded as the personal Claude Code substitute for the Hammerstein operator.

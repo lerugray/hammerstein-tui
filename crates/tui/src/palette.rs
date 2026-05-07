@@ -310,7 +310,7 @@ impl UiTheme {
 
     #[must_use]
     pub fn detect() -> Self {
-        Self::for_mode(PaletteMode::detect())
+        if std::env::var("HAMMERSTEIN_THEME").is_ok() { HAMMERSTEIN_UI_THEME } else { Self::for_mode(PaletteMode::detect()) }
     }
 
     #[must_use]

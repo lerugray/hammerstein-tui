@@ -274,6 +274,31 @@ pub const LIGHT_UI_THEME: UiTheme = UiTheme {
     border: LIGHT_BORDER,
 };
 
+pub const HAMMERSTEIN_UI_THEME: UiTheme = UiTheme {
+    name: "hammerstein",
+    mode: PaletteMode::Dark,
+    surface_bg: Color::Rgb(13, 27, 42),
+    panel_bg: Color::Rgb(21, 34, 56),
+    elevated_bg: Color::Rgb(28, 44, 68),
+    composer_bg: Color::Rgb(21, 34, 56),
+    selection_bg: Color::Rgb(30, 58, 92),
+    header_bg: Color::Rgb(13, 27, 42),
+    footer_bg: Color::Rgb(13, 27, 42),
+    mode_agent: Color::Rgb(201, 169, 64),
+    mode_yolo: Color::Rgb(192, 64, 64),
+    mode_plan: Color::Rgb(180, 130, 60),
+    status_ready: Color::Rgb(160, 160, 150),
+    status_working: Color::Rgb(201, 169, 64),
+    status_warning: Color::Rgb(184, 92, 58),
+    text_dim: Color::Rgb(130, 140, 150),
+    text_hint: Color::Rgb(150, 158, 165),
+    text_muted: Color::Rgb(185, 190, 195),
+    text_body: Color::Rgb(232, 228, 217),
+    text_soft: Color::Rgb(210, 215, 220),
+    border: Color::Rgb(58, 82, 104),
+};
+
+
 impl UiTheme {
     #[must_use]
     pub fn for_mode(mode: PaletteMode) -> Self {

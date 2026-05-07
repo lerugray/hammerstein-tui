@@ -24,17 +24,34 @@ The TUI is where you spend your day. `hd` dispatch runs from within it. The `ham
 git clone https://github.com/lerugray/hammerstein-tui.git
 cd hammerstein-tui
 
-# Install the wrapper
+# Install wrappers and slash command
 ln -s "$(pwd)/scripts/hammerstein-tui" ~/.local/bin/hammerstein-tui
 ln -s "$(pwd)/scripts/hammerstein-dispatch" ~/.local/bin/hammerstein-dispatch
-chmod +x scripts/hammerstein-tui scripts/hammerstein-dispatch
+mkdir -p ~/.deepseek/commands
+ln -s "$(pwd)/scripts/commands/dispatch.md" ~/.deepseek/commands/dispatch.md
 
-# Set your DeepSeek API key (the TUI uses the DeepSeek API by default)
+# Set your DeepSeek API key
 export HAMMERSTEIN_API_KEY="sk-..."
 
 # Launch
 hammerstein-tui
 ```
+
+## Dispatch from within the TUI
+
+### Slash command (recommended)
+
+Type `/dispatch fix the auth bug` in the TUI chat. The model:
+1. Runs `hammerstein --template audit-this-plan` as a pre-flight
+2. Shows the audit result
+3. Confirms with you
+4. Dispatches via `hd` for execution
+
+Requires: `ln -s "$(pwd)/scripts/commands/dispatch.md" ~/.deepseek/commands/dispatch.md`
+
+### Shell command (alternative)
+
+Type `!hammerstein-dispatch "fix the auth bug"` to run audit + dispatch directly via shell.
 
 ## Config
 
@@ -54,20 +71,7 @@ export HAMMERSTEIN_API_KEY="sk-..."
 export HAMMERSTEIN_MODEL="deepseek-v4-pro"
 ```
 
-The wrapper forwards `HAMMERSTEIN_*` env vars to the underlying `DEEPSEEK_*` vars that the binary expects.
-
-## `hd` dispatch from within the TUI
-
-From the TUI chat, run:
-
-```
-!hammerstein-dispatch "fix the auth flow to handle expired tokens"
-```
-
-This:
-1. Runs `hammerstein --template audit-this-plan` as a pre-flight
-2. Shows the audit result
-3. Dispatches via `hd` (which routes to aider for code execution)
+The wrapper forwards `HAMMERSTEIN_*` env vars to the underlying `DEEPSEEK_*` vars.
 
 ## Features
 
@@ -82,22 +86,22 @@ Everything from DeepSeek-TUI v0.8.16:
 
 ## Provider routing
 
-Same as DeepSeek-TUI. The default provider is DeepSeek API. Override with:
+Same as DeepSeek-TUI. Default provider is DeepSeek API. Override with:
 
 ```bash
 hammerstein-tui --provider openrouter
 ```
 
-Or set `HAMMERSTEIN_PROVIDER=openrouter` in your environment.
+Or set `HAMMERSTEIN_PROVIDER=openrouter`.
 
 ## Relationship to DeepSeek-TUI
 
 This is a fork of [DeepSeek-TUI](https://github.com/Hmbown/DeepSeek-TUI) (MIT license). The fork exists to:
 
 1. Provide Hammerstein-branded launcher scripts with `HAMMERSTEIN_*` env vars
-2. Integrate `hd` dispatch (`hammerstein-dispatch`)
+2. Integrate `hd` dispatch via slash command and shell script
 3. Use `~/.hammerstein/tui/` for config (no conflict with deepseek-tui)
-4. Eventually rebrand the Rust source fully (binary names, display strings, theme)
+4. Eventually rebrand the Rust source fully
 
 Upstream changes can be merged. The wrapper script approach means the fork works immediately without rebuilding the Rust binary.
 

@@ -21,6 +21,16 @@ The TUI is where you spend your day. `hd` dispatch runs from within it. The `ham
 
 ## Quickstart
 
+### One-line installer
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/lerugray/hammerstein-tui/main/install.sh | bash
+```
+
+Then launch: `hamt`
+
+### Manual setup
+
 ```bash
 # Clone
 git clone https://github.com/lerugray/hammerstein-tui.git
@@ -91,7 +101,7 @@ Everything from DeepSeek-TUI v0.8.16:
 Same as DeepSeek-TUI. Default provider is DeepSeek API. Override with:
 
 ```bash
-hammerstein-tui --provider openrouter
+hamt --provider openrouter
 ```
 
 Or set `HAMMERSTEIN_PROVIDER=openrouter`.

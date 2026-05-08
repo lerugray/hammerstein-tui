@@ -423,6 +423,53 @@ mod tests {
         assert!(params.iter().any(|(k, _)| k == "DARWIN_USER_CACHE_DIR"));
     }
 
+    /// End-to-end check: the workspace-write policy with extra writable
+    /// roots renders into a seatbelt profile that grants `file-write*`
+    /// for every root via `WRITABLE_ROOT_N` params, and the param table
+    /// canonicalizes each root to a real path. This is the contract
+    /// `sandbox_policy_for_mode` relies on when it propagates
+    /// `sandbox_writable_roots` (config / env / CLI) into Agent mode.
+    #[test]
+    fn test_extra_writable_roots_appear_in_profile_and_params() {
+        // Use real, existing dirs so canonicalize() succeeds in
+        // `get_writable_roots`. /tmp and /var are stable on macOS.
+        let cwd = Path::new("/tmp");
+        let extra_a = std::path::PathBuf::from("/var");
+        let policy = SandboxPolicy::WorkspaceWrite {
+            // Mirror what `sandbox_policy_for_mode` produces: workspace
+            // first, then the user's extras.
+            writable_roots: vec![cwd.to_path_buf(), extra_a.clone()],
+            network_access: true,
+            exclude_tmpdir: false,
+            exclude_slash_tmp: false,
+        };
+
+        let profile = generate_policy(&policy, cwd);
+        let params = generate_params(&policy, cwd);
+
+        // Profile must reference each WRITABLE_ROOT_N param. We don't
+        // pin specific indexes because get_writable_roots also adds /tmp
+        // and TMPDIR — what matters is "every entry the user passed in
+        // is present somewhere in the param table".
+        let canonical_extra = extra_a.canonicalize().unwrap_or(extra_a.clone());
+        let extra_in_params = params
+            .iter()
+            .any(|(_, v)| *v == canonical_extra || *v == extra_a);
+        assert!(
+            extra_in_params,
+            "extra writable root {extra_a:?} must appear in seatbelt params; got {params:?}"
+        );
+
+        // Profile must include at least one writable-root subpath rule
+        // and the network rules (we set network_access = true).
+        assert!(profile.contains("file-write*"));
+        assert!(profile.contains("network-outbound"));
+        assert!(
+            profile.contains("WRITABLE_ROOT_0") || profile.contains("WRITABLE_ROOT_1"),
+            "profile should reference WRITABLE_ROOT_N param tokens; got: {profile}"
+        );
+    }
+
     /// #558: cargo publish reaches into ~/.cargo/registry; the seatbelt has
     /// to allow read+write inside it. Both the policy text and the param
     /// table must be in sync — emitting one without the other makes

@@ -49,6 +49,17 @@ Other settings (skills_dir, hooks, capacity, retry, etc.) stay
 user-global. If your repo needs more, file an issue describing the
 specific use case.
 
+A few keys are **explicitly denied** at project scope (`api_key`,
+`base_url`, `provider`, `mcp_config_path`, `sandbox_writable_roots`)
+because they would let a repo escalate its own privileges on your
+machine — pointing the agent at a different model server, swapping in
+a hostile MCP set, or granting itself write access to paths outside
+the workspace. Set those in `~/.deepseek/config.toml` instead. The
+TUI prints a stderr warning when an ignored key is encountered so a
+copy-pasted overlay isn't silently dropped. See
+[Cross-repo writable roots](#cross-repo-writable-roots-sandbox_writable_roots-)
+below for the user-controlled surfaces.
+
 The `deepseek` facade and `deepseek-tui` binary share the same config file for
 DeepSeek auth and model defaults. `deepseek auth set --provider deepseek` (and
 the legacy `deepseek login --api-key ...` alias) saves the key to
@@ -188,6 +199,7 @@ fallbacks after saved config and keyring credentials:
 - `DEEPSEEK_ALLOW_SHELL` (`1`/`true` enables)
 - `DEEPSEEK_APPROVAL_POLICY` (`on-request|untrusted|never`)
 - `DEEPSEEK_SANDBOX_MODE` (`read-only|workspace-write|danger-full-access|external-sandbox`)
+- `DEEPSEEK_SANDBOX_WRITABLE_ROOTS` (colon-separated paths; see "Cross-repo writable roots" below)
 - `DEEPSEEK_MANAGED_CONFIG_PATH`
 - `DEEPSEEK_REQUIREMENTS_PATH`
 - `DEEPSEEK_MAX_SUBAGENTS` (clamped to `1..=20`)
@@ -216,6 +228,80 @@ fallbacks after saved config and keyring credentials:
   get added alongside the platform's system trust store. Failures
   log a warning and continue — the existing system roots still
   apply.
+
+### Cross-repo writable roots (`sandbox_writable_roots = [...]`)
+
+> **Narrow allowlist example — start here.** Most users want one or two
+> specific sibling repos, not their whole `Desktop`:
+>
+> ```toml
+> # ~/.deepseek/config.toml
+> sandbox_writable_roots = [
+>     "~/code/sibling-repo-a",
+>     "~/code/sibling-repo-b",
+> ]
+> ```
+>
+> Each entry grants the Agent-mode shell tool **full read+write** for
+> any command the model runs. Treat it like sudo. Prefer listing
+> individual repo paths over broad parents like `~/code` or `~/`.
+
+By default, the interactive TUI's Agent-mode shell tool can only write
+inside the workspace, `/tmp`, and `$TMPDIR`. `sandbox_writable_roots`
+extends that allowlist with extra directory roots, in order to permit
+cross-repo `git pull` / writes from a session whose workspace is *not*
+the repo being operated on (for example, a fleet-dispatcher session
+that fans out to sibling project directories).
+
+Configuration surfaces, in increasing precedence:
+
+1. **User config (`~/.deepseek/config.toml`)** — persistent, applies to
+   every session on the machine. The recommended home for an allowlist
+   you want everywhere.
+2. **Env var `DEEPSEEK_SANDBOX_WRITABLE_ROOTS`** — colon-separated list,
+   replaces the file value when set. Useful for a wrapper script /
+   launcher that wants different roots per invocation:
+   ```sh
+   export DEEPSEEK_SANDBOX_WRITABLE_ROOTS="$HOME/code/foo:$HOME/code/bar"
+   hamt
+   ```
+3. **CLI flag `--writable-root <PATH>`** — repeatable, layered **on top
+   of** the file/env list (does not replace it). For one-off paths:
+   ```sh
+   hamt --writable-root ~/code/sibling-repo
+   ```
+
+**Blast-radius warning.** Every entry is full read+write inside that
+subtree for any shell command the agent decides to run. The sandbox
+still blocks writes outside these roots, but inside them the agent
+has the same authority you do. Implications:
+
+- A broad root (`~`, `~/Desktop`, `/`) effectively disables the
+  workspace-write envelope. If you want that, use `--yolo` instead;
+  it's at least honest about what it does.
+- Don't list directories containing credentials (`~/.ssh`,
+  `~/.aws`, `~/.config`, password-manager exports, browser profile
+  dirs). The agent can read them anyway (read access is global by
+  design), but listing them gives it the ability to *modify* them.
+- Use `--writable-root` for one-shot needs, the file/env for
+  recurring patterns. Don't paste-into-config a path you only need
+  for one session.
+
+**Project-overlay denial.** `sandbox_writable_roots` is **rejected** if
+it appears in a workspace's `.deepseek/config.toml`. The trust prompt
+only authorizes "do shell commands run in this workspace?" — not
+"can shell commands write outside the workspace?" — so a hostile repo
+could otherwise grant itself write access to `~/.ssh`, `~/Documents`,
+etc. The setting is user-controlled by design.
+
+Relationship to existing knobs:
+
+- **Plan mode** ignores `sandbox_writable_roots` — it stays
+  `ReadOnly` (no writes anywhere, no network) by contract.
+- **Yolo mode** ignores it too — already full disk access.
+- **`hamt sandbox run`** is a separate CLI subcommand with its own
+  `--writable-root` flag for one-shot sandboxed commands; that path
+  is unrelated to the interactive TUI shell tool.
 
 ### Instruction sources (`instructions = [...]`, #454)
 
@@ -364,6 +450,7 @@ If you are upgrading from older releases:
 - `allow_shell` (bool, optional): defaults to `true` (sandboxed).
 - `approval_policy` (string, optional): `on-request`, `untrusted`, or `never`. Runtime `approval_mode` editing in `/config` also accepts `on-request` and `untrusted` aliases.
 - `sandbox_mode` (string, optional): `read-only`, `workspace-write`, `danger-full-access`, `external-sandbox`.
+- `sandbox_writable_roots` (array of string, optional): extra directories the Agent-mode shell tool may write to, in addition to the workspace, `/tmp`, and `$TMPDIR`. Paths run through `expand_path` so `~` and env vars work. **User-config only — denied at project scope.** See [Cross-repo writable roots](#cross-repo-writable-roots-sandbox_writable_roots-) for the blast-radius warning and recommended narrow allowlist.
 - `managed_config_path` (string, optional): managed config file loaded after user/env config.
 - `requirements_path` (string, optional): requirements file used to enforce allowed approval/sandbox values.
 - `max_subagents` (int, optional): defaults to `10` and is clamped to `1..=20`.

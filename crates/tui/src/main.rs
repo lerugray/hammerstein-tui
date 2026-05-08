@@ -168,6 +168,16 @@ struct Cli {
     /// Skip loading project-level config from $WORKSPACE/.deepseek/config.toml
     #[arg(long = "no-project-config")]
     no_project_config: bool,
+
+    /// Extra writable root for the Agent-mode shell tool (repeatable).
+    ///
+    /// Adds a directory to the workspace-write sandbox envelope so commands
+    /// run in the interactive TUI can write outside the workspace. Mirrors
+    /// `sandbox_writable_roots` in config and `DEEPSEEK_SANDBOX_WRITABLE_ROOTS`
+    /// in the env. Use sparingly — every entry is full read+write for any
+    /// command the model runs.
+    #[arg(long = "writable-root", value_name = "PATH", action = clap::ArgAction::Append)]
+    writable_root: Vec<PathBuf>,
 }
 
 #[derive(Subcommand, Debug, Clone)]
@@ -2700,6 +2710,17 @@ fn load_config_from_cli(cli: &Cli) -> Result<Config> {
         .or_else(|| std::env::var("DEEPSEEK_PROFILE").ok());
     let mut config = Config::load(cli.config.clone(), profile.as_deref())?;
     cli.feature_toggles.apply(&mut config)?;
+    // CLI `--writable-root` flag wins over file/env config — we extend
+    // rather than replace so the user can stack a one-off path on top of
+    // their persistent allowlist (mirrors how `--enable`/`--disable`
+    // layers on top of `[features]`).
+    if !cli.writable_root.is_empty() {
+        let mut roots: Vec<String> = config.sandbox_writable_roots.clone().unwrap_or_default();
+        for path in &cli.writable_root {
+            roots.push(path.to_string_lossy().into_owned());
+        }
+        config.sandbox_writable_roots = Some(roots);
+    }
     Ok(config)
 }
 
@@ -3802,7 +3823,21 @@ fn merge_project_config(config: &mut Config, workspace: &Path) {
     // a stderr warning on first encounter so a user who *did* expect
     // the override has a chance to notice the deny instead of silent
     // discard.
-    const DENY_AT_PROJECT_SCOPE: &[&str] = &["api_key", "base_url", "provider", "mcp_config_path"];
+    // `sandbox_writable_roots` is denied here for the same reason as
+    // `api_key` / `mcp_config_path`: the trust prompt only gates "do shell
+    // commands run in this workspace?" — it does NOT authorize writes
+    // outside the workspace. A hostile repo's `.deepseek/config.toml`
+    // could otherwise grant itself write access to `~/.ssh`,
+    // `~/Documents`, etc. Cross-repo allowlists belong in
+    // `~/.deepseek/config.toml`, `DEEPSEEK_SANDBOX_WRITABLE_ROOTS`, or
+    // `--writable-root` — surfaces the user controls directly.
+    const DENY_AT_PROJECT_SCOPE: &[&str] = &[
+        "api_key",
+        "base_url",
+        "provider",
+        "mcp_config_path",
+        "sandbox_writable_roots",
+    ];
     for key in DENY_AT_PROJECT_SCOPE {
         if table.contains_key(*key) {
             eprintln!(
@@ -3873,6 +3908,7 @@ fn merge_project_config(config: &mut Config, workspace: &Path) {
             .collect();
         config.instructions = Some(entries);
     }
+
 }
 
 async fn run_interactive(
@@ -4175,6 +4211,7 @@ async fn run_exec_agent(
         .tag()
         .to_string(),
         workshop: config.workshop.clone(),
+        sandbox_extra_writable_roots: config.sandbox_writable_roots(),
     };
 
     let engine_handle = spawn_engine(engine_config, config);

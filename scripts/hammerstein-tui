@@ -15,7 +15,7 @@ export HAMMERSTEIN_THEME=1
 mkdir -p "$HOME/.hammerstein/tui"
 
 # Use our built binary if available, otherwise fall back to system deepseek-tui
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 BUILT_BIN="$SCRIPT_DIR/../target/release/hammerstein-tui"
 if [ -x "$BUILT_BIN" ]; then
     exec "$BUILT_BIN" "$@"

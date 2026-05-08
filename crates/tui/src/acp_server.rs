@@ -285,7 +285,7 @@ fn initialize_result(client_protocol_version: Option<u64>) -> Value {
         },
         "agentInfo": {
             "name": "deepseek",
-            "title": "DeepSeek TUI",
+            "title": "Hammerstein TUI",
             "version": env!("CARGO_PKG_VERSION")
         },
         "authMethods": []

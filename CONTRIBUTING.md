@@ -1,6 +1,6 @@
-# Contributing to DeepSeek TUI
+# Contributing to Hammerstein TUI
 
-Thank you for your interest in contributing to DeepSeek TUI! This document provides guidelines and instructions for contributing.
+Thank you for your interest in contributing to Hammerstein TUI! This document provides guidelines and instructions for contributing.
 
 ## Getting Started
 
@@ -66,7 +66,7 @@ Example: `feat: add doctor subcommand for system diagnostics`
 
 ## Project Structure
 
-DeepSeek TUI is a Cargo workspace. The live runtime and the majority of TUI,
+Hammerstein TUI is a Cargo workspace. The live runtime and the majority of TUI,
 engine, and tool code currently live in `crates/tui/src/`. Smaller workspace
 crates provide shared abstractions that are being extracted incrementally.
 
@@ -149,7 +149,7 @@ When reporting issues, please include:
 
 - Operating system and version
 - Rust version (`rustc --version`)
-- DeepSeek TUI version (`deepseek --version`)
+- Hammerstein TUI version (`deepseek --version`)
 - Steps to reproduce the issue
 - Expected vs actual behavior
 - Relevant error messages or logs
@@ -160,7 +160,7 @@ Be respectful and inclusive. We welcome contributors of all backgrounds and expe
 
 ## License
 
-By contributing to DeepSeek TUI, you agree that your contributions will be licensed under the MIT License.
+By contributing to Hammerstein TUI, you agree that your contributions will be licensed under the MIT License.
 
 ## Questions?
 

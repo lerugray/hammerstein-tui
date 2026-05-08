@@ -1,10 +1,10 @@
-# Competitive Analysis: DeepSeek TUI vs OpenCode vs Codex CLI
+# Competitive Analysis: Hammerstein TUI vs OpenCode vs Codex CLI
 
-Analysis of capabilities across three AI coding agents: OpenCode (`/Volumes/VIXinSSD/opencode`), Codex CLI (`/Volumes/VIXinSSD/codex-main`), and DeepSeek TUI (`/Volumes/VIXinSSD/deepseek-tui`).
+Analysis of capabilities across three AI coding agents: OpenCode (`/Volumes/VIXinSSD/opencode`), Codex CLI (`/Volumes/VIXinSSD/codex-main`), and Hammerstein TUI (`/Volumes/VIXinSSD/deepseek-tui`).
 
 ## Tool Matrix
 
-| Capability | OpenCode | Codex CLI | DeepSeek TUI |
+| Capability | OpenCode | Codex CLI | Hammerstein TUI |
 |---|---|---|---|
 | File read | ✅ Read | ✅ | ✅ file |
 | File write | ✅ Write | ✅ | ✅ file |
@@ -41,7 +41,7 @@ Analysis of capabilities across three AI coding agents: OpenCode (`/Volumes/VIXi
 
 ## High Priority Gaps
 
-These are capabilities that would most directly improve DeepSeek TUI's effectiveness as a coding agent.
+These are capabilities that would most directly improve Hammerstein TUI's effectiveness as a coding agent.
 
 ### 1. LSP Integration
 
@@ -64,7 +64,7 @@ Supported operations:
 - outgoingCalls
 ```
 
-**What DeepSeek TUI would need:** A new `lsp.rs` tool in `crates/tui/src/tools/`, integration with tower-lsp or lsp-server crate, and per-language server configuration.
+**What Hammerstein TUI would need:** A new `lsp.rs` tool in `crates/tui/src/tools/`, integration with tower-lsp or lsp-server crate, and per-language server configuration.
 
 ### 2. Granular Permission System
 
@@ -96,7 +96,7 @@ explore: {
 }
 ```
 
-**What DeepSeek TUI would need:** A permission rule engine with the same dimension (tool name × path pattern × action), persistence to disk, and hook integration so approval decisions can cascade.
+**What Hammerstein TUI would need:** A permission rule engine with the same dimension (tool name × path pattern × action), persistence to disk, and hook integration so approval decisions can cascade.
 
 ### 3. Lifecycle Hooks
 
@@ -123,7 +123,7 @@ Each hook handler supports:
 - `source_path` + `source`: tracks where the hook was defined (project hooks.json, user config, plugin)
 - Hooks can return `Success`, `FailedContinue`, or `FailedAbort` (blocks the operation)
 
-**What DeepSeek TUI would need:** Extend `crates/hooks/` to support the full event surface, add matcher-based filtering, and provide a `hooks.json` discovery mechanism similar to Codex CLI's.
+**What Hammerstein TUI would need:** Extend `crates/hooks/` to support the full event surface, add matcher-based filtering, and provide a `hooks.json` discovery mechanism similar to Codex CLI's.
 
 ### 4. Persistent Memories
 
@@ -137,7 +137,7 @@ Each hook handler supports:
 - The `Chronicle` feature adds passive screen-context memories via a sidecar process
 - Memories are stored in SQLite and surfaced in the TUI via `/memories` command
 
-**What DeepSeek TUI would need:** A memory extraction prompt, a vector or keyword-based retrieval system, and storage in the existing session/state infrastructure.
+**What Hammerstein TUI would need:** A memory extraction prompt, a vector or keyword-based retrieval system, and storage in the existing session/state infrastructure.
 
 ### 5. Skill Auto-Discovery
 
@@ -156,7 +156,7 @@ Each hook handler supports:
 
 Skills are parsed for YAML frontmatter (`name`, `description`) and Markdown content. Duplicate names warn but don't error. Skills respect agent permissions — an agent can only load skills its permission ruleset allows.
 
-**What DeepSeek TUI would need:** Extend the existing `~/.deepseek/skills/` discovery to parent-directory walking, Claude Code compatibility paths, and URL-based skill sources. Add YAML frontmatter parsing.
+**What Hammerstein TUI would need:** Extend the existing `~/.deepseek/skills/` discovery to parent-directory walking, Claude Code compatibility paths, and URL-based skill sources. Add YAML frontmatter parsing.
 
 ---
 
@@ -178,7 +178,7 @@ These would meaningfully improve the agent experience but are less urgent.
 
 Each agent carries its own `model`, `temperature`, `topP`, `prompt`, and `permission` ruleset. A `generate` function creates new agent configs dynamically from user descriptions.
 
-**What DeepSeek TUI would need:** Extend the mode system (Plan/Agent/YOLO) to support named agent profiles with per-profile tool filtering and model configuration.
+**What Hammerstein TUI would need:** Extend the mode system (Plan/Agent/YOLO) to support named agent profiles with per-profile tool filtering and model configuration.
 
 ### 7. Shell Sandboxing
 
@@ -192,7 +192,7 @@ Each agent carries its own `model`, `temperature`, `topP`, `prompt`, and `permis
 - Configurable sandbox policies per command
 - Integration tests can detect they're running under sandbox and early-exit
 
-**What DeepSeek TUI would need:** Extend `crates/execpolicy/` to support platform-specific sandbox enforcement. Start with macOS Seatbelt (most DeepSeek TUI users are on macOS).
+**What Hammerstein TUI would need:** Extend `crates/execpolicy/` to support platform-specific sandbox enforcement. Start with macOS Seatbelt (most Hammerstein TUI users are on macOS).
 
 ### 8. Tool Search / Deferred MCP Tool Exposure
 
@@ -200,7 +200,7 @@ Each agent carries its own `model`, `temperature`, `topP`, `prompt`, and `permis
 
 **Codex CLI implementation:** `ToolSearch` feature (stable, default-enabled). `ToolSearchAlwaysDeferMcpTools` goes further — never exposes MCP tools directly, always requires search. This is critical when MCP servers expose hundreds of tools.
 
-**What DeepSeek TUI would need:** `tool_search_tool_regex` and `tool_search_tool_bm25` already exist as deferred tool discovery mechanisms. Extend them to gate MCP tool exposure behind on-demand search.
+**What Hammerstein TUI would need:** `tool_search_tool_regex` and `tool_search_tool_bm25` already exist as deferred tool discovery mechanisms. Extend them to gate MCP tool exposure behind on-demand search.
 
 ### 9. ExecPolicy / Command Approval Rules
 
@@ -216,7 +216,7 @@ Each agent carries its own `model`, `temperature`, `topP`, `prompt`, and `permis
 
 Rules can be amended at runtime via `blocking_append_allow_prefix_rule`.
 
-**What DeepSeek TUI would need:** Extend `crates/execpolicy/` to support prefix rules, network rules, and runtime policy amendments.
+**What Hammerstein TUI would need:** Extend `crates/execpolicy/` to support prefix rules, network rules, and runtime policy amendments.
 
 ### 10. Dynamic Agent Generation
 
@@ -224,7 +224,7 @@ Rules can be amended at runtime via `blocking_append_allow_prefix_rule`.
 
 **OpenCode implementation:** The `generate` function in `agent.ts` takes a description like "code reviewer that only reads files and reports issues" and returns an `{ identifier, whenToUse, systemPrompt }` object using a structured LLM call. Generated agents respect existing agent name collisions.
 
-**What DeepSeek TUI would need:** A model-callable tool or slash command that generates agent configs from descriptions and registers them for the session.
+**What Hammerstein TUI would need:** A model-callable tool or slash command that generates agent configs from descriptions and registers them for the session.
 
 ### 11. Streaming Patch Events
 
@@ -232,7 +232,7 @@ Rules can be amended at runtime via `blocking_append_allow_prefix_rule`.
 
 **Codex CLI implementation:** `ApplyPatchStreamingEvents` feature (under development) streams file-level progress as the model produces patch hunks. The `StreamingPatchParser` in `apply-patch/src/streaming_parser.rs` handles incremental parsing.
 
-**What DeepSeek TUI would need:** Extend `apply_patch.rs` to emit progress events during streaming model output.
+**What Hammerstein TUI would need:** Extend `apply_patch.rs` to emit progress events during streaming model output.
 
 ---
 
@@ -243,7 +243,7 @@ Specialized features that are valuable but less critical for core coding workflo
 | Capability | Where | Notes |
 |---|---|---|
 | Image Generation | Codex CLI `ImageGeneration` | Niche for coding; useful for documentation diagrams |
-| Browser Use | Codex CLI `BrowserUse` | Interactive browser automation (click, type, screenshot). DeepSeek TUI has `web_run` for headless |
+| Browser Use | Codex CLI `BrowserUse` | Interactive browser automation (click, type, screenshot). Hammerstein TUI has `web_run` for headless |
 | Computer Use | Codex CLI `ComputerUse` | Full desktop automation. Desktop-app-gated |
 | Realtime Voice | Codex CLI `RealtimeConversation` | Voice conversation mode. Experimental |
 | Unified PTY Exec | Codex CLI `UnifiedExec` | Single PTY-backed shell with state snapshotting across turns |
@@ -280,7 +280,7 @@ Specialized features that are valuable but less critical for core coding workflo
 
 **Core Modularity:** Explicit resistance to adding code to `codex-core`. New functionality goes into purpose-built crates (`codex-apply-patch`, `codex-memories`, `codex-sandboxing`) rather than growing the core crate.
 
-### DeepSeek TUI
+### Hammerstein TUI
 
 **RLM (Recursive Language Model):** Unique in this space. A sandboxed Python REPL where a sub-LLM can call helpers (`llm_query`, `llm_query_batched`, `rlm_query`) for batch processing, chunking, and recursive critique. Neither competitor has an equivalent.
 
@@ -290,7 +290,7 @@ Specialized features that are valuable but less critical for core coding workflo
 
 ---
 
-## What DeepSeek TUI Already Excels At
+## What Hammerstein TUI Already Excels At
 
 - **RLM** — batch/bulk LLM processing in a Python sandbox; no equivalent in either competitor
 - **Finance** — live stock/crypto quotes; unique in this space

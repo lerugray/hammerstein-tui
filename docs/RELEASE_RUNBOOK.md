@@ -1,4 +1,4 @@
-# DeepSeek TUI Release Runbook
+# Hammerstein TUI Release Runbook
 
 This runbook is the source of truth for shipping Rust crates, GitHub release assets,
 and the `deepseek-tui` npm wrapper.

@@ -1,9 +1,11 @@
-//! Self-update for the `deepseek` binary.
+//! Self-update for the `hammerstein` binary.
 //!
 //! The `update` subcommand fetches the latest release from
-//! `github.com/Hmbown/DeepSeek-TUI/releases/latest`, downloads the
+//! `github.com/lerugray/hammerstein-tui/releases/latest`, downloads the
 //! platform-correct binary, verifies its SHA256 checksum, and atomically
-//! replaces the currently running binary.
+//! replaces the currently running binary. (No release pipeline exists on
+//! the fork yet; this currently fails closed with "no assets" rather than
+//! silently overwriting the user's binary with an upstream copy.)
 
 use std::path::Path;
 use std::process::Command;
@@ -142,7 +144,7 @@ struct Asset {
 
 /// Fetch the latest release metadata from GitHub.
 fn fetch_latest_release() -> Result<Release> {
-    let url = "https://api.github.com/repos/Hmbown/DeepSeek-TUI/releases/latest";
+    let url = "https://api.github.com/repos/lerugray/hammerstein-tui/releases/latest";
     let output = Command::new("curl")
         .args([
             "-sSfL",

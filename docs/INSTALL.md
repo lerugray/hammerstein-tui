@@ -1,4 +1,4 @@
-# Installing DeepSeek TUI
+# Installing Hammerstein TUI
 
 This page covers every supported install path and the most common
 "it didn't install" failures, including **Linux ARM64** and other less
@@ -158,7 +158,7 @@ curl -L -o /tmp/deepseek-artifacts-sha256.txt \
 
 ### Windows Scoop
 
-DeepSeek TUI is listed in Scoop's main bucket:
+Hammerstein TUI is listed in Scoop's main bucket:
 
 ```powershell
 scoop update

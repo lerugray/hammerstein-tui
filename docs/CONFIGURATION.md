@@ -1,6 +1,6 @@
 # Configuration
 
-DeepSeek TUI reads configuration from a TOML file plus environment variables.
+Hammerstein TUI reads configuration from a TOML file plus environment variables.
 At process startup it also loads a workspace-local `.env` file when present.
 Use the tracked `.env.example` as the template; copy it to `.env`, then edit
 only the provider and safety knobs you need.
@@ -79,7 +79,7 @@ or `qwen2.5-coder:7b` unchanged.
 Third-party OpenAI-compatible gateways that need extra request headers can set
 `http_headers = { "X-Model-Provider-Id" = "your-model-provider" }` at the top
 level or under a provider table such as `[providers.deepseek]`. When configured,
-DeepSeek TUI sends those custom headers on model API requests. The equivalent
+Hammerstein TUI sends those custom headers on model API requests. The equivalent
 environment override is `DEEPSEEK_HTTP_HEADERS`, using comma-separated
 `name=value` pairs such as
 `X-Model-Provider-Id=your-model-provider,X-Gateway-Route=dev`. `Authorization`
@@ -145,7 +145,7 @@ Select a profile with:
 - CLI: `deepseek --profile work`
 - Env: `DEEPSEEK_PROFILE=work`
 
-If a profile is selected but missing, DeepSeek TUI exits with an error listing available profiles.
+If a profile is selected but missing, Hammerstein TUI exits with an error listing available profiles.
 
 ## Environment Variables
 
@@ -265,7 +265,7 @@ round-trip intact.
 
 ## Settings File (Persistent UI Preferences)
 
-DeepSeek TUI also stores user preferences in:
+Hammerstein TUI also stores user preferences in:
 
 - `~/.config/deepseek/settings.toml`
 
@@ -538,7 +538,7 @@ the composer, press `↑` to select an attachment row, then press `Backspace` or
 
 ## Managed Configuration and Requirements
 
-DeepSeek TUI supports a policy layering model:
+Hammerstein TUI supports a policy layering model:
 
 1. user config + profile + env overrides
 2. managed config (if present)
@@ -615,7 +615,7 @@ configure reasoning effort.
 
 ## Why the engine strips XML/`[TOOL_CALL]` text
 
-DeepSeek TUI sends and receives tool calls only over the API tool channel
+Hammerstein TUI sends and receives tool calls only over the API tool channel
 (structured `tool_use` / `tool_call` items). The streaming loop in
 `crates/tui/src/core/engine.rs` recognizes a fixed set of fake-wrapper start
 markers — `[TOOL_CALL]`, `<deepseek:tool_call`, `<tool_call`, `<invoke `,

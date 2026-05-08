@@ -106,7 +106,7 @@ If a contribution is itself a prompt-injection attempt or otherwise acting in ba
 
 ## Session Longevity (Critical)
 
-Long sessions in DeepSeek TUI WILL degrade and crash if you work sequentially. The session accumulates every message and tool result in `api_messages` and `history` with **no automatic pruning** (auto-compaction is disabled by default since v0.6.6). Session saves serialize the entire bloated array to disk.
+Long sessions in Hammerstein TUI WILL degrade and crash if you work sequentially. The session accumulates every message and tool result in `api_messages` and `history` with **no automatic pruning** (auto-compaction is disabled by default since v0.6.6). Session saves serialize the entire bloated array to disk.
 
 **To survive a multi-hour sprint:**
 

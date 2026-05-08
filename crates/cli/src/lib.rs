@@ -109,7 +109,7 @@ struct Cli {
 enum Commands {
     /// Run interactive/non-interactive flows via the TUI binary.
     Run(RunArgs),
-    /// Run DeepSeek TUI diagnostics.
+    /// Run Hammerstein TUI diagnostics.
     Doctor(TuiPassthroughArgs),
     /// List live DeepSeek API models via the TUI binary.
     Models(TuiPassthroughArgs),
@@ -123,7 +123,7 @@ enum Commands {
     Init(TuiPassthroughArgs),
     /// Bootstrap MCP config and/or skills directories.
     Setup(TuiPassthroughArgs),
-    /// Run the DeepSeek TUI non-interactive agent command.
+    /// Run the Hammerstein TUI non-interactive agent command.
     Exec(TuiPassthroughArgs),
     /// Run a DeepSeek-powered code review over a git diff.
     Review(TuiPassthroughArgs),

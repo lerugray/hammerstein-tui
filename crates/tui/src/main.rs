@@ -480,13 +480,13 @@ enum McpCommand {
     },
     /// Validate MCP config and required servers
     Validate,
-    /// Register this DeepSeek binary as a local MCP stdio server.
+    /// Register this Hammerstein binary as a local MCP stdio server.
     ///
     /// This adds a config entry that runs `deepseek serve --mcp` (stdio protocol).
     /// For the HTTP/SSE runtime API, use `deepseek serve --http` directly instead.
     #[command(
         name = "add-self",
-        long_about = "Register this DeepSeek binary as a local MCP stdio server.\n\nAdds a config entry to ~/.deepseek/mcp.json that launches `deepseek serve --mcp`\nvia the stdio transport. Other DeepSeek sessions (or any MCP client) can then\ndiscover and call tools exposed by this server.\n\nUse `deepseek serve --http` instead if you need the HTTP/SSE runtime API."
+        long_about = "Register this Hammerstein binary as a local MCP stdio server.\n\nAdds a config entry to ~/.deepseek/mcp.json that launches `deepseek serve --mcp`\nvia the stdio transport. Other Hammerstein sessions (or any MCP client) can then\ndiscover and call tools exposed by this server.\n\nUse `deepseek serve --http` instead if you need the HTTP/SSE runtime API."
     )]
     AddSelf {
         /// Server name in mcp.json (default: "deepseek")
@@ -1143,9 +1143,9 @@ fn run_setup(config: &Config, workspace: &Path, args: SetupArgs) -> Result<()> {
 
     println!(
         "{}",
-        "DeepSeek Setup".truecolor(aqua_r, aqua_g, aqua_b).bold()
+        "Hammerstein Setup".truecolor(aqua_r, aqua_g, aqua_b).bold()
     );
-    println!("{}", "==============".truecolor(sky_r, sky_g, sky_b));
+    println!("{}", "=================".truecolor(sky_r, sky_g, sky_b));
     println!("Workspace: {}", crate::utils::display_path(workspace));
 
     if run_mcp {
@@ -1312,9 +1312,9 @@ fn run_setup_status(config: &Config, workspace: &Path) -> Result<()> {
 
     println!(
         "{}",
-        "DeepSeek Status".truecolor(aqua_r, aqua_g, aqua_b).bold()
+        "Hammerstein Status".truecolor(aqua_r, aqua_g, aqua_b).bold()
     );
-    println!("{}", "===============".truecolor(sky_r, sky_g, sky_b));
+    println!("{}", "==================".truecolor(sky_r, sky_g, sky_b));
     println!("workspace: {}", workspace.display());
 
     match resolve_api_key_source(config) {

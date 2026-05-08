@@ -48,7 +48,7 @@ const INSTRUCTIONS_FILE_MAX_BYTES: usize = 100 * 1024;
 /// guess from the user's first message. `locale_tag` is resolved by
 /// the caller from `Settings` so this function stays I/O-free.
 fn render_environment_block(workspace: &Path, locale_tag: &str) -> String {
-    let deepseek_version = env!("CARGO_PKG_VERSION");
+    let hammerstein_version = env!("CARGO_PKG_VERSION");
     let platform = std::env::consts::OS;
     let shell = std::env::var("SHELL").unwrap_or_else(|_| "unknown".to_string());
     let pwd = workspace.display();
@@ -57,7 +57,7 @@ fn render_environment_block(workspace: &Path, locale_tag: &str) -> String {
         "## Environment\n\
          \n\
          - lang: {locale_tag}\n\
-         - deepseek_version: {deepseek_version}\n\
+         - hammerstein_version: {hammerstein_version}\n\
          - platform: {platform}\n\
          - shell: {shell}\n\
          - pwd: {pwd}"
@@ -525,7 +525,7 @@ mod tests {
         assert!(block.starts_with("## Environment"));
         assert!(block.contains("- lang: zh-Hans"));
         assert!(block.contains(&format!(
-            "- deepseek_version: {}",
+            "- hammerstein_version: {}",
             env!("CARGO_PKG_VERSION")
         )));
         assert!(block.contains(&format!("- pwd: {}", tmp.path().display())));
@@ -553,7 +553,7 @@ mod tests {
         };
         assert!(prompt.contains("## Environment"));
         assert!(prompt.contains("- lang: ja"));
-        assert!(prompt.contains("- deepseek_version:"));
+        assert!(prompt.contains("- hammerstein_version:"));
     }
 
     #[test]
@@ -605,7 +605,7 @@ mod tests {
     fn compose_prompt_includes_all_layers() {
         let prompt = compose_prompt(AppMode::Agent, Personality::Calm);
         // Base layer
-        assert!(prompt.contains("You are DeepSeek TUI"));
+        assert!(prompt.contains("You are Hammerstein TUI"));
         // Personality layer
         assert!(prompt.contains("Personality: Calm"));
         // Mode layer
@@ -617,7 +617,7 @@ mod tests {
     #[test]
     fn compose_prompt_deterministic_order() {
         let prompt = compose_prompt(AppMode::Yolo, Personality::Calm);
-        let base_pos = prompt.find("You are DeepSeek TUI").unwrap();
+        let base_pos = prompt.find("You are Hammerstein TUI").unwrap();
         let personality_pos = prompt.find("Personality: Calm").unwrap();
         let mode_pos = prompt.find("Mode: YOLO").unwrap();
         let approval_pos = prompt.find("Approval Policy: Auto").unwrap();

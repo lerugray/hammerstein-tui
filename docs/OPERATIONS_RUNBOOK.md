@@ -1,4 +1,4 @@
-# DeepSeek TUI Operations Runbook
+# Hammerstein TUI Operations Runbook
 
 This runbook covers practical debugging and incident response for the local CLI/TUI runtime.
 

@@ -4,7 +4,7 @@
 
 A terminal-native TUI for strategic reasoning and code dispatch, built on the [Hammerstein framework](https://github.com/lerugray/hammerstein). Forked from [DeepSeek-TUI](https://github.com/Hmbown/DeepSeek-TUI) (MIT) and rebranded as the personal Claude Code substitute for the Hammerstein operator.
 
-**Status:** Active fork. Wraps the deepseek-tui binary with Hammerstein config paths and `hd` dispatch integration. Full rebrand of the Rust source is queued.
+**Status:** Active fork. Native Rust binary with Hammerstein config paths, `hd` dispatch integration, Prussian theme default, sandbox-roots support for cross-repo writes, and rebranded display chrome / env vars (DEEPSEEK_* aliases retained for backward compat).
 
 ## What this is
 

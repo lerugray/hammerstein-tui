@@ -1,6 +1,6 @@
 # Security Policy
 
-DeepSeek TUI is a coding agent with direct access to file operations, shell execution, and the network. Security disclosures are taken seriously.
+Hammerstein TUI is a coding agent with direct access to file operations, shell execution, and the network. Security disclosures are taken seriously.
 
 ## Supported Versions
 
@@ -11,16 +11,17 @@ Only the latest stable release receives security patches. No backports to older 
 | latest stable | :white_check_mark: |
 | < latest | :x: |
 
-Check the [releases page](https://github.com/Hmbown/DeepSeek-TUI/releases) for the current version.
+Check the [releases page](https://github.com/lerugray/hammerstein-tui/releases) for the current version.
 
 ## Reporting a Vulnerability
 
 **Do not open a public GitHub issue for security vulnerabilities.**
 
-Report privately via one of:
+If the vulnerability is specific to this fork (Hammerstein-only changes — sandbox surfaces, Prussian theme, env var aliasing, `hd` dispatch, `~/.hammerstein/` paths), report privately via:
 
-- **Email**: [hmbown.dev@gmail.com](mailto:hmbown.dev@gmail.com) — include `[SECURITY]` in the subject line
-- **GitHub private advisory**: [github.com/Hmbown/DeepSeek-TUI/security/advisories/new](https://github.com/Hmbown/DeepSeek-TUI/security/advisories/new)
+- **GitHub private advisory**: [github.com/lerugray/hammerstein-tui/security/advisories/new](https://github.com/lerugray/hammerstein-tui/security/advisories/new)
+
+If the vulnerability is in the underlying DeepSeek-TUI codebase (which this fork inherits), please also coordinate with the upstream project at [github.com/Hmbown/DeepSeek-TUI](https://github.com/Hmbown/DeepSeek-TUI) so the fix can land for all downstream users.
 
 Include in your report:
 

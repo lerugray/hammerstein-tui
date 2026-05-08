@@ -30,7 +30,7 @@ const DEFAULT_STREAM_OPEN_TIMEOUT: Duration = Duration::from_secs(45);
 /// not model thinking time after streaming has started.
 fn stream_open_timeout() -> Duration {
     stream_open_timeout_from_env(
-        std::env::var("DEEPSEEK_STREAM_OPEN_TIMEOUT_SECS")
+        crate::env_alias::var("HAMMERSTEIN_STREAM_OPEN_TIMEOUT_SECS", "DEEPSEEK_STREAM_OPEN_TIMEOUT_SECS")
             .ok()
             .as_deref(),
     )
@@ -47,7 +47,7 @@ fn stream_open_timeout_from_env(value: Option<&str>) -> Duration {
 /// Reads the `DEEPSEEK_STREAM_IDLE_TIMEOUT_SECS` env var, falling back to
 /// the default 300s. The parsed value is clamped to [1, 3600] seconds.
 fn stream_idle_timeout() -> Duration {
-    let secs = std::env::var("DEEPSEEK_STREAM_IDLE_TIMEOUT_SECS")
+    let secs = crate::env_alias::var("HAMMERSTEIN_STREAM_IDLE_TIMEOUT_SECS", "DEEPSEEK_STREAM_IDLE_TIMEOUT_SECS")
         .ok()
         .and_then(|v| v.parse::<u64>().ok())
         .unwrap_or(DEFAULT_STREAM_IDLE_TIMEOUT.as_secs())

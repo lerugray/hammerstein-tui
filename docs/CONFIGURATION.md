@@ -150,14 +150,27 @@ If a profile is selected but missing, Hammerstein TUI exits with an error listin
 ## Environment Variables
 
 Most runtime environment variables override config values. API-key variables are
-fallbacks after saved config and keyring credentials:
+fallbacks after saved config and keyring credentials.
 
-- `DEEPSEEK_API_KEY`
-- `DEEPSEEK_BASE_URL`
-- `DEEPSEEK_HTTP_HEADERS` (custom model request headers, comma-separated `name=value` pairs)
-- `DEEPSEEK_PROVIDER` (`deepseek|deepseek-cn|nvidia-nim|openai|openrouter|novita|fireworks|sglang|vllm|ollama`)
-- `DEEPSEEK_MODEL` or `DEEPSEEK_DEFAULT_TEXT_MODEL`
-- `DEEPSEEK_STREAM_IDLE_TIMEOUT_SECS` (stream idle timeout in seconds; default `300`, clamped to `1..=3600`)
+> **Naming during the rebrand:** every variable below is recognized under
+> both the new `HAMMERSTEIN_*` prefix and the legacy `DEEPSEEK_*` prefix.
+> When both are set, `HAMMERSTEIN_*` wins. When only `DEEPSEEK_*` is set,
+> hamt picks it up and emits a one-shot deprecation warning per variable
+> via `tracing::warn` (visible at the default log level). The
+> `DEEPSEEK_*` aliases will be removed in a future release. Hamt also
+> sets *both* names for any var it injects (hook scripts, subprocess
+> inheritance) so existing user hooks that read `DEEPSEEK_*` keep
+> working through the transition.
+>
+> The variable list below is shown with the `HAMMERSTEIN_*` prefix; swap
+> in `DEEPSEEK_*` if you prefer (no behaviour change).
+
+- `HAMMERSTEIN_API_KEY` (alias: `DEEPSEEK_API_KEY`)
+- `HAMMERSTEIN_BASE_URL` (alias: `DEEPSEEK_BASE_URL`)
+- `HAMMERSTEIN_HTTP_HEADERS` (custom model request headers, comma-separated `name=value` pairs)
+- `HAMMERSTEIN_PROVIDER` (`deepseek|deepseek-cn|nvidia-nim|openai|openrouter|novita|fireworks|sglang|vllm|ollama`)
+- `HAMMERSTEIN_MODEL` or `HAMMERSTEIN_DEFAULT_TEXT_MODEL`
+- `HAMMERSTEIN_STREAM_IDLE_TIMEOUT_SECS` (stream idle timeout in seconds; default `300`, clamped to `1..=3600`)
 - `NVIDIA_API_KEY` or `NVIDIA_NIM_API_KEY` (preferred when provider is `nvidia-nim`; falls back to `DEEPSEEK_API_KEY`)
 - `NVIDIA_NIM_BASE_URL`, `NIM_BASE_URL`, or `NVIDIA_BASE_URL`
 - `NVIDIA_NIM_MODEL`
@@ -179,35 +192,35 @@ fallbacks after saved config and keyring credentials:
 - `OLLAMA_BASE_URL`
 - `OLLAMA_MODEL`
 - `OLLAMA_API_KEY` (optional; many localhost Ollama servers do not require auth)
-- `DEEPSEEK_LOG_LEVEL` or `RUST_LOG` (`info`/`debug`/`trace` enables lightweight verbose logs)
-- `DEEPSEEK_SKILLS_DIR`
-- `DEEPSEEK_MCP_CONFIG`
-- `DEEPSEEK_NOTES_PATH`
-- `DEEPSEEK_MEMORY` (`1|on|true|yes|y|enabled` turns user memory on)
-- `DEEPSEEK_MEMORY_PATH`
-- `DEEPSEEK_ALLOW_SHELL` (`1`/`true` enables)
-- `DEEPSEEK_APPROVAL_POLICY` (`on-request|untrusted|never`)
-- `DEEPSEEK_SANDBOX_MODE` (`read-only|workspace-write|danger-full-access|external-sandbox`)
-- `DEEPSEEK_MANAGED_CONFIG_PATH`
-- `DEEPSEEK_REQUIREMENTS_PATH`
-- `DEEPSEEK_MAX_SUBAGENTS` (clamped to `1..=20`)
-- `DEEPSEEK_TASKS_DIR` (runtime task queue/artifact storage, default `~/.deepseek/tasks`)
-- `DEEPSEEK_ALLOW_INSECURE_HTTP` (`1`/`true` allows non-local `http://` base URLs; default is reject)
-- `DEEPSEEK_CAPACITY_ENABLED`
-- `DEEPSEEK_CAPACITY_LOW_RISK_MAX`
-- `DEEPSEEK_CAPACITY_MEDIUM_RISK_MAX`
-- `DEEPSEEK_CAPACITY_SEVERE_MIN_SLACK`
-- `DEEPSEEK_CAPACITY_SEVERE_VIOLATION_RATIO`
-- `DEEPSEEK_CAPACITY_REFRESH_COOLDOWN_TURNS`
-- `DEEPSEEK_CAPACITY_REPLAN_COOLDOWN_TURNS`
-- `DEEPSEEK_CAPACITY_MAX_REPLAY_PER_TURN`
-- `DEEPSEEK_CAPACITY_MIN_TURNS_BEFORE_GUARDRAIL`
-- `DEEPSEEK_CAPACITY_PROFILE_WINDOW`
-- `DEEPSEEK_CAPACITY_PRIOR_CHAT`
-- `DEEPSEEK_CAPACITY_PRIOR_REASONER`
-- `DEEPSEEK_CAPACITY_PRIOR_V4_PRO`
-- `DEEPSEEK_CAPACITY_PRIOR_V4_FLASH`
-- `DEEPSEEK_CAPACITY_PRIOR_FALLBACK`
+- `HAMMERSTEIN_LOG_LEVEL` (alias: `DEEPSEEK_LOG_LEVEL`) or `RUST_LOG` (`info`/`debug`/`trace` enables lightweight verbose logs)
+- `HAMMERSTEIN_SKILLS_DIR`
+- `HAMMERSTEIN_MCP_CONFIG`
+- `HAMMERSTEIN_NOTES_PATH`
+- `HAMMERSTEIN_MEMORY` (`1|on|true|yes|y|enabled` turns user memory on)
+- `HAMMERSTEIN_MEMORY_PATH`
+- `HAMMERSTEIN_ALLOW_SHELL` (`1`/`true` enables)
+- `HAMMERSTEIN_APPROVAL_POLICY` (`on-request|untrusted|never`)
+- `HAMMERSTEIN_SANDBOX_MODE` (`read-only|workspace-write|danger-full-access|external-sandbox`)
+- `HAMMERSTEIN_MANAGED_CONFIG_PATH`
+- `HAMMERSTEIN_REQUIREMENTS_PATH`
+- `HAMMERSTEIN_MAX_SUBAGENTS` (clamped to `1..=20`)
+- `HAMMERSTEIN_TASKS_DIR` (runtime task queue/artifact storage, default `~/.deepseek/tasks`)
+- `HAMMERSTEIN_ALLOW_INSECURE_HTTP` (`1`/`true` allows non-local `http://` base URLs; default is reject)
+- `HAMMERSTEIN_CAPACITY_ENABLED`
+- `HAMMERSTEIN_CAPACITY_LOW_RISK_MAX`
+- `HAMMERSTEIN_CAPACITY_MEDIUM_RISK_MAX`
+- `HAMMERSTEIN_CAPACITY_SEVERE_MIN_SLACK`
+- `HAMMERSTEIN_CAPACITY_SEVERE_VIOLATION_RATIO`
+- `HAMMERSTEIN_CAPACITY_REFRESH_COOLDOWN_TURNS`
+- `HAMMERSTEIN_CAPACITY_REPLAN_COOLDOWN_TURNS`
+- `HAMMERSTEIN_CAPACITY_MAX_REPLAY_PER_TURN`
+- `HAMMERSTEIN_CAPACITY_MIN_TURNS_BEFORE_GUARDRAIL`
+- `HAMMERSTEIN_CAPACITY_PROFILE_WINDOW`
+- `HAMMERSTEIN_CAPACITY_PRIOR_CHAT`
+- `HAMMERSTEIN_CAPACITY_PRIOR_REASONER`
+- `HAMMERSTEIN_CAPACITY_PRIOR_V4_PRO`
+- `HAMMERSTEIN_CAPACITY_PRIOR_V4_FLASH`
+- `HAMMERSTEIN_CAPACITY_PRIOR_FALLBACK`
 - `NO_ANIMATIONS` (`1|true|yes|on` forces `low_motion = true` and
   `fancy_animations = false` at startup, regardless of the saved
   settings; see [`docs/ACCESSIBILITY.md`](./ACCESSIBILITY.md)).

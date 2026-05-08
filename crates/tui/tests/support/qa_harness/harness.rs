@@ -216,8 +216,8 @@ impl Harness {
     /// Tests should call this rather than hard-coding paths.
     pub fn cargo_bin(name: &str) -> PathBuf {
         // CARGO_BIN_EXE_<name> is set by Cargo for binaries declared in the
-        // same crate as the integration test. For deepseek-tui the binary
-        // name is `deepseek-tui`.
+        // same crate as the integration test. For Hammerstein TUI the binary
+        // name is `hammerstein-tui` (renamed from `deepseek-tui` in c0c33b4).
         let key = format!("CARGO_BIN_EXE_{name}");
         std::env::var_os(&key)
             .map(PathBuf::from)

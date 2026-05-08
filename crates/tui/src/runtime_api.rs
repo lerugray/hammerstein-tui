@@ -310,7 +310,7 @@ pub async fn run_http_server(
     let runtime_token = options
         .auth_token
         .clone()
-        .or_else(|| std::env::var("DEEPSEEK_RUNTIME_TOKEN").ok())
+        .or_else(|| crate::env_alias::var("HAMMERSTEIN_RUNTIME_TOKEN", "DEEPSEEK_RUNTIME_TOKEN").ok())
         .filter(|token| !token.trim().is_empty());
     let auth_enabled = runtime_token.is_some();
     let state = RuntimeApiState {

@@ -83,7 +83,7 @@ export HAMMERSTEIN_API_KEY="sk-..."
 export HAMMERSTEIN_MODEL="deepseek-v4-pro"
 ```
 
-The wrapper forwards `HAMMERSTEIN_*` env vars to the underlying `DEEPSEEK_*` vars.
+Hamt reads `HAMMERSTEIN_*` natively and falls back to legacy `DEEPSEEK_*` aliases (logged as deprecated). The wrapper script also forwards a few `HAMMERSTEIN_*` env vars (api key, model, provider, base URL) to the legacy names for the case where you swap in an upstream `deepseek-tui` binary.
 
 ## Features
 

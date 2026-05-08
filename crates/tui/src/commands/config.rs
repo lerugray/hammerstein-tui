@@ -259,7 +259,7 @@ pub fn persist_root_string_key(key: &str, value: &str) -> anyhow::Result<PathBuf
 /// never write to a different file than the one we read.
 pub(super) fn config_toml_path() -> anyhow::Result<PathBuf> {
     use anyhow::Context;
-    if let Ok(env) = std::env::var("DEEPSEEK_CONFIG_PATH") {
+    if let Ok(env) = crate::env_alias::var("HAMMERSTEIN_CONFIG_PATH", "DEEPSEEK_CONFIG_PATH") {
         let trimmed = env.trim();
         if !trimmed.is_empty() {
             return Ok(PathBuf::from(trimmed));

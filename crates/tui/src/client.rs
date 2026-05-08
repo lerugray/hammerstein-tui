@@ -182,12 +182,12 @@ struct TokenBucket {
 
 impl TokenBucket {
     fn from_env() -> Self {
-        let rps = std::env::var("DEEPSEEK_RATE_LIMIT_RPS")
+        let rps = crate::env_alias::var("HAMMERSTEIN_RATE_LIMIT_RPS", "DEEPSEEK_RATE_LIMIT_RPS")
             .ok()
             .and_then(|v| v.parse::<f64>().ok())
             .unwrap_or(DEFAULT_CLIENT_RATE_LIMIT_RPS)
             .max(0.0);
-        let burst = std::env::var("DEEPSEEK_RATE_LIMIT_BURST")
+        let burst = crate::env_alias::var("HAMMERSTEIN_RATE_LIMIT_BURST", "DEEPSEEK_RATE_LIMIT_BURST")
             .ok()
             .and_then(|v| v.parse::<f64>().ok())
             .unwrap_or(DEFAULT_CLIENT_RATE_LIMIT_BURST)
@@ -408,7 +408,7 @@ pub(super) fn api_url(base_url: &str, path: &str) -> String {
 /// to opt out of HTTP/2 entirely when DeepSeek's edge mishandles long-lived H2
 /// streams (#103). Anything else (unset, `0`, `false`, ...) leaves HTTP/2 on.
 fn force_http1_from_env() -> bool {
-    std::env::var("DEEPSEEK_FORCE_HTTP1")
+    crate::env_alias::var("HAMMERSTEIN_FORCE_HTTP1", "DEEPSEEK_FORCE_HTTP1")
         .ok()
         .map(|v| v.trim().to_ascii_lowercase())
         .is_some_and(|v| matches!(v.as_str(), "1" | "true" | "yes" | "on"))

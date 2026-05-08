@@ -96,7 +96,7 @@ impl TuiPrefs {
     pub fn path() -> Result<PathBuf> {
         // Honour the same env-var escape hatch used by Settings::path so that
         // integration tests can redirect all config I/O to a temp directory.
-        if let Ok(config_path) = std::env::var("DEEPSEEK_CONFIG_PATH") {
+        if let Ok(config_path) = crate::env_alias::var("HAMMERSTEIN_CONFIG_PATH", "DEEPSEEK_CONFIG_PATH") {
             let config_path = config_path.trim();
             if !config_path.is_empty() {
                 let p = expand_path(config_path);
@@ -258,7 +258,7 @@ impl Settings {
         // Allow tests to override the settings directory via the same env var
         // used for config (DEEPSEEK_CONFIG_PATH points at config.toml; the
         // settings file lives as a sibling in the same directory).
-        if let Ok(config_path) = std::env::var("DEEPSEEK_CONFIG_PATH") {
+        if let Ok(config_path) = crate::env_alias::var("HAMMERSTEIN_CONFIG_PATH", "DEEPSEEK_CONFIG_PATH") {
             let config_path = config_path.trim();
             if !config_path.is_empty() {
                 let p = expand_path(config_path);
@@ -1026,7 +1026,7 @@ mod tests {
         if let Some(home) = dirs::home_dir() {
             let expected = home.join(".deepseek").join("tui.toml");
             // Only compare when no env override is active.
-            if std::env::var("DEEPSEEK_CONFIG_PATH").is_err() {
+            if crate::env_alias::var("HAMMERSTEIN_CONFIG_PATH", "DEEPSEEK_CONFIG_PATH").is_err() {
                 let got = TuiPrefs::path().expect("path should resolve");
                 assert_eq!(got, expected);
             }

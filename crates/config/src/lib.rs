@@ -1227,7 +1227,7 @@ pub fn resolve_config_path(explicit: Option<PathBuf>) -> Result<PathBuf> {
     if let Some(path) = explicit {
         return Ok(path);
     }
-    if let Ok(path) = std::env::var("DEEPSEEK_CONFIG_PATH") {
+    if let Ok(path) = env_alias::var("HAMMERSTEIN_CONFIG_PATH", "DEEPSEEK_CONFIG_PATH") {
         let trimmed = path.trim();
         if !trimmed.is_empty() {
             return Ok(PathBuf::from(trimmed));
@@ -1327,23 +1327,23 @@ struct EnvRuntimeOverrides {
 impl EnvRuntimeOverrides {
     fn load() -> Self {
         Self {
-            provider: std::env::var("DEEPSEEK_PROVIDER")
+            provider: env_alias::var("HAMMERSTEIN_PROVIDER", "DEEPSEEK_PROVIDER")
                 .ok()
                 .and_then(|v| ProviderKind::parse(&v)),
-            model: std::env::var("DEEPSEEK_MODEL").ok(),
-            output_mode: std::env::var("DEEPSEEK_OUTPUT_MODE").ok(),
-            auth_mode: std::env::var("DEEPSEEK_AUTH_MODE").ok(),
-            log_level: std::env::var("DEEPSEEK_LOG_LEVEL").ok(),
-            telemetry: std::env::var("DEEPSEEK_TELEMETRY")
+            model: env_alias::var("HAMMERSTEIN_MODEL", "DEEPSEEK_MODEL").ok(),
+            output_mode: env_alias::var("HAMMERSTEIN_OUTPUT_MODE", "DEEPSEEK_OUTPUT_MODE").ok(),
+            auth_mode: env_alias::var("HAMMERSTEIN_AUTH_MODE", "DEEPSEEK_AUTH_MODE").ok(),
+            log_level: env_alias::var("HAMMERSTEIN_LOG_LEVEL", "DEEPSEEK_LOG_LEVEL").ok(),
+            telemetry: env_alias::var("HAMMERSTEIN_TELEMETRY", "DEEPSEEK_TELEMETRY")
                 .ok()
                 .and_then(|v| parse_bool(&v).ok()),
-            approval_policy: std::env::var("DEEPSEEK_APPROVAL_POLICY").ok(),
-            sandbox_mode: std::env::var("DEEPSEEK_SANDBOX_MODE").ok(),
-            http_headers: std::env::var("DEEPSEEK_HTTP_HEADERS")
+            approval_policy: env_alias::var("HAMMERSTEIN_APPROVAL_POLICY", "DEEPSEEK_APPROVAL_POLICY").ok(),
+            sandbox_mode: env_alias::var("HAMMERSTEIN_SANDBOX_MODE", "DEEPSEEK_SANDBOX_MODE").ok(),
+            http_headers: env_alias::var("HAMMERSTEIN_HTTP_HEADERS", "DEEPSEEK_HTTP_HEADERS")
                 .ok()
                 .and_then(|value| parse_http_headers(&value).ok())
                 .filter(|headers| !headers.is_empty()),
-            deepseek_base_url: std::env::var("DEEPSEEK_BASE_URL")
+            deepseek_base_url: env_alias::var("HAMMERSTEIN_BASE_URL", "DEEPSEEK_BASE_URL")
                 .ok()
                 .filter(|v| !v.trim().is_empty()),
             nvidia_base_url: std::env::var("NVIDIA_NIM_BASE_URL")
@@ -1388,6 +1388,47 @@ impl EnvRuntimeOverrides {
             ProviderKind::Sglang => self.sglang_base_url.clone(),
             ProviderKind::Vllm => self.vllm_base_url.clone(),
             ProviderKind::Ollama => self.ollama_base_url.clone(),
+        }
+    }
+}
+
+/// Backward-compatible env var aliasing for the Hammerstein rebrand.
+///
+/// Reads `HAMMERSTEIN_X` first; falls back to `DEEPSEEK_X` and emits a
+/// one-shot deprecation warning per legacy name. Drop-in for
+/// `std::env::var` — same `Result<String, VarError>` shape.
+mod env_alias {
+    use std::collections::HashSet;
+    use std::env::VarError;
+    use std::sync::Mutex;
+
+    pub fn var(hammerstein_name: &str, deepseek_name: &str) -> Result<String, VarError> {
+        match std::env::var(hammerstein_name) {
+            Ok(v) => Ok(v),
+            Err(_) => match std::env::var(deepseek_name) {
+                Ok(v) => {
+                    warn_deprecated_once(hammerstein_name, deepseek_name);
+                    Ok(v)
+                }
+                Err(e) => Err(e),
+            },
+        }
+    }
+
+    fn warn_deprecated_once(hammerstein_name: &str, deepseek_name: &str) {
+        // No tracing subscriber wired up in the binary — write to stderr
+        // directly so the user actually sees the deprecation note.
+        static SEEN: Mutex<Option<HashSet<String>>> = Mutex::new(None);
+        let mut guard = match SEEN.lock() {
+            Ok(g) => g,
+            Err(_) => return,
+        };
+        let seen = guard.get_or_insert_with(HashSet::new);
+        if seen.insert(deepseek_name.to_string()) {
+            eprintln!(
+                "warning: {deepseek_name} is deprecated; use {hammerstein_name} instead. \
+                 The DEEPSEEK_* alias will be removed in a future release."
+            );
         }
     }
 }

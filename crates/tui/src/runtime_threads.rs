@@ -489,7 +489,7 @@ pub struct RuntimeThreadManagerConfig {
 impl RuntimeThreadManagerConfig {
     #[must_use]
     pub fn from_task_data_dir(task_data_dir: PathBuf) -> Self {
-        let data_dir = if let Ok(override_dir) = std::env::var("DEEPSEEK_RUNTIME_DIR") {
+        let data_dir = if let Ok(override_dir) = crate::env_alias::var("HAMMERSTEIN_RUNTIME_DIR", "DEEPSEEK_RUNTIME_DIR") {
             if override_dir.trim().is_empty() {
                 task_data_dir.join("runtime")
             } else {

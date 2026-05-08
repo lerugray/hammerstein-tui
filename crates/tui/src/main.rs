@@ -1,4 +1,4 @@
-//! CLI entry point for the `DeepSeek` client.
+//! CLI entry point for the Hammerstein TUI client.
 
 use std::io::{self, IsTerminal, Read, Write};
 use std::path::{Path, PathBuf};
@@ -28,6 +28,7 @@ mod core;
 mod cost_status;
 mod cycle_manager;
 mod deepseek_theme;
+mod env_alias;
 mod error_taxonomy;
 mod eval;
 mod execpolicy;
@@ -1062,7 +1063,7 @@ fn resolve_cors_origins(config: &Config, flag_origins: &[String]) -> Vec<String>
     for o in flag_origins {
         push(o);
     }
-    if let Ok(env_value) = std::env::var("DEEPSEEK_CORS_ORIGINS") {
+    if let Ok(env_value) = crate::env_alias::var("HAMMERSTEIN_CORS_ORIGINS", "DEEPSEEK_CORS_ORIGINS") {
         for piece in env_value.split(',') {
             push(piece);
         }
@@ -1256,12 +1257,12 @@ enum ApiKeySource {
 }
 
 fn resolve_api_key_source(config: &Config) -> ApiKeySource {
-    if std::env::var("DEEPSEEK_API_KEY")
+    if crate::env_alias::var("HAMMERSTEIN_API_KEY", "DEEPSEEK_API_KEY")
         .ok()
         .filter(|k| !k.trim().is_empty())
         .is_some()
     {
-        match std::env::var("DEEPSEEK_API_KEY_SOURCE").ok().as_deref() {
+        match crate::env_alias::var("HAMMERSTEIN_API_KEY_SOURCE", "DEEPSEEK_API_KEY_SOURCE").ok().as_deref() {
             Some("config") => return ApiKeySource::Config,
             Some("keyring") => return ApiKeySource::Keyring,
             _ => {}
@@ -1278,7 +1279,7 @@ fn resolve_api_key_source(config: &Config) -> ApiKeySource {
             .is_some_and(|k| !k.trim().is_empty())
     {
         ApiKeySource::Config
-    } else if std::env::var("DEEPSEEK_API_KEY")
+    } else if crate::env_alias::var("HAMMERSTEIN_API_KEY", "DEEPSEEK_API_KEY")
         .ok()
         .filter(|k| !k.trim().is_empty())
         .is_some()
@@ -1545,7 +1546,7 @@ async fn run_doctor(config: &Config, workspace: &Path, config_path_override: Opt
     let config_path = config_path_override
         .map(PathBuf::from)
         .or_else(|| {
-            std::env::var("DEEPSEEK_CONFIG_PATH")
+            crate::env_alias::var("HAMMERSTEIN_CONFIG_PATH", "DEEPSEEK_CONFIG_PATH")
                 .ok()
                 .map(PathBuf::from)
         })
@@ -1572,7 +1573,7 @@ async fn run_doctor(config: &Config, workspace: &Path, config_path_override: Opt
 
     // Per-provider state: env + config file only (no values printed).
     // Keep doctor/status prompt-free even for unsigned rebuilt binaries.
-    let dispatcher_api_key_source = std::env::var("DEEPSEEK_API_KEY_SOURCE").ok();
+    let dispatcher_api_key_source = crate::env_alias::var("HAMMERSTEIN_API_KEY_SOURCE", "DEEPSEEK_API_KEY_SOURCE").ok();
     for (provider, slot, env_names) in [
         (
             crate::config::ApiProvider::Deepseek,
@@ -2109,7 +2110,7 @@ fn run_doctor_json(
     let config_path = config_path_override
         .map(PathBuf::from)
         .or_else(|| {
-            std::env::var("DEEPSEEK_CONFIG_PATH")
+            crate::env_alias::var("HAMMERSTEIN_CONFIG_PATH", "DEEPSEEK_CONFIG_PATH")
                 .ok()
                 .map(PathBuf::from)
         })
@@ -2209,7 +2210,7 @@ fn run_doctor_json(
     // until the two PRs land and it can be replaced with a single
     // method call.)
     let memory_path = config.memory_path();
-    let memory_enabled_env = std::env::var("DEEPSEEK_MEMORY")
+    let memory_enabled_env = crate::env_alias::var("HAMMERSTEIN_MEMORY", "DEEPSEEK_MEMORY")
         .ok()
         .map(|raw| {
             matches!(
@@ -2697,7 +2698,7 @@ fn load_config_from_cli(cli: &Cli) -> Result<Config> {
     let profile = cli
         .profile
         .clone()
-        .or_else(|| std::env::var("DEEPSEEK_PROFILE").ok());
+        .or_else(|| crate::env_alias::var("HAMMERSTEIN_PROFILE", "DEEPSEEK_PROFILE").ok());
     let mut config = Config::load(cli.config.clone(), profile.as_deref())?;
     cli.feature_toggles.apply(&mut config)?;
     Ok(config)
@@ -5350,8 +5351,8 @@ mod setup_helper_tests {
     #[test]
     fn resolve_api_key_source_reports_env_when_set() {
         let _guard = ENV_LOCK.lock().unwrap_or_else(|p| p.into_inner());
-        let prev = std::env::var("DEEPSEEK_API_KEY").ok();
-        let prev_source = std::env::var("DEEPSEEK_API_KEY_SOURCE").ok();
+        let prev = crate::env_alias::var("HAMMERSTEIN_API_KEY", "DEEPSEEK_API_KEY").ok();
+        let prev_source = crate::env_alias::var("HAMMERSTEIN_API_KEY_SOURCE", "DEEPSEEK_API_KEY_SOURCE").ok();
         unsafe {
             std::env::set_var("DEEPSEEK_API_KEY", "test-helper-value");
             std::env::remove_var("DEEPSEEK_API_KEY_SOURCE");
@@ -5372,8 +5373,8 @@ mod setup_helper_tests {
     #[test]
     fn resolve_api_key_source_reports_dispatcher_keyring() {
         let _guard = ENV_LOCK.lock().unwrap_or_else(|p| p.into_inner());
-        let prev = std::env::var("DEEPSEEK_API_KEY").ok();
-        let prev_source = std::env::var("DEEPSEEK_API_KEY_SOURCE").ok();
+        let prev = crate::env_alias::var("HAMMERSTEIN_API_KEY", "DEEPSEEK_API_KEY").ok();
+        let prev_source = crate::env_alias::var("HAMMERSTEIN_API_KEY_SOURCE", "DEEPSEEK_API_KEY_SOURCE").ok();
         unsafe {
             std::env::set_var("DEEPSEEK_API_KEY", "test-helper-value");
             std::env::set_var("DEEPSEEK_API_KEY_SOURCE", "keyring");
@@ -5394,8 +5395,8 @@ mod setup_helper_tests {
     #[test]
     fn resolve_api_key_source_prefers_config_over_env() {
         let _guard = ENV_LOCK.lock().unwrap_or_else(|p| p.into_inner());
-        let prev = std::env::var("DEEPSEEK_API_KEY").ok();
-        let prev_source = std::env::var("DEEPSEEK_API_KEY_SOURCE").ok();
+        let prev = crate::env_alias::var("HAMMERSTEIN_API_KEY", "DEEPSEEK_API_KEY").ok();
+        let prev_source = crate::env_alias::var("HAMMERSTEIN_API_KEY_SOURCE", "DEEPSEEK_API_KEY_SOURCE").ok();
         unsafe {
             std::env::set_var("DEEPSEEK_API_KEY", "stale-env-key");
             std::env::remove_var("DEEPSEEK_API_KEY_SOURCE");

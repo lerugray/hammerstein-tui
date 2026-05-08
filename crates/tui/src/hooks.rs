@@ -329,14 +329,27 @@ impl HookContext {
     }
 
     /// Convert to environment variables
+    ///
+    /// Each var is exposed under BOTH the new `HAMMERSTEIN_*` name and the
+    /// legacy `DEEPSEEK_*` name so hook scripts that read the old prefix
+    /// keep working through the rebrand. Future cleanup pass can drop the
+    /// `DEEPSEEK_*` side once user-side hooks have migrated.
     pub fn to_env_vars(&self) -> HashMap<String, String> {
         let mut env = HashMap::new();
 
+        // Insert both `HAMMERSTEIN_<suffix>` and `DEEPSEEK_<suffix>` with
+        // the same value. The legacy alias is retained for backward
+        // compatibility with existing hook scripts.
+        let mut put = |suffix: &str, value: String| {
+            env.insert(format!("HAMMERSTEIN_{suffix}"), value.clone());
+            env.insert(format!("DEEPSEEK_{suffix}"), value);
+        };
+
         if let Some(ref name) = self.tool_name {
-            env.insert("DEEPSEEK_TOOL_NAME".to_string(), name.clone());
+            put("TOOL_NAME", name.clone());
         }
         if let Some(ref args) = self.tool_args {
-            env.insert("DEEPSEEK_TOOL_ARGS".to_string(), args.clone());
+            put("TOOL_ARGS", args.clone());
         }
         if let Some(ref result) = self.tool_result {
             // Truncate result to 10KB to avoid environment variable size limits
@@ -351,22 +364,22 @@ impl HookContext {
             } else {
                 result.clone()
             };
-            env.insert("DEEPSEEK_TOOL_RESULT".to_string(), truncated);
+            put("TOOL_RESULT", truncated);
         }
         if let Some(code) = self.tool_exit_code {
-            env.insert("DEEPSEEK_TOOL_EXIT_CODE".to_string(), code.to_string());
+            put("TOOL_EXIT_CODE", code.to_string());
         }
         if let Some(success) = self.tool_success {
-            env.insert("DEEPSEEK_TOOL_SUCCESS".to_string(), success.to_string());
+            put("TOOL_SUCCESS", success.to_string());
         }
         if let Some(ref mode) = self.mode {
-            env.insert("DEEPSEEK_MODE".to_string(), mode.clone());
+            put("MODE", mode.clone());
         }
         if let Some(ref prev) = self.previous_mode {
-            env.insert("DEEPSEEK_PREVIOUS_MODE".to_string(), prev.clone());
+            put("PREVIOUS_MODE", prev.clone());
         }
         if let Some(ref session_id) = self.session_id {
-            env.insert("DEEPSEEK_SESSION_ID".to_string(), session_id.clone());
+            put("SESSION_ID", session_id.clone());
         }
         if let Some(ref message) = self.message {
             // Truncate message to prevent env var issues
@@ -381,22 +394,22 @@ impl HookContext {
             } else {
                 message.clone()
             };
-            env.insert("DEEPSEEK_MESSAGE".to_string(), truncated);
+            put("MESSAGE", truncated);
         }
         if let Some(ref error) = self.error_message {
-            env.insert("DEEPSEEK_ERROR".to_string(), error.clone());
+            put("ERROR", error.clone());
         }
         if let Some(ref ws) = self.workspace {
-            env.insert("DEEPSEEK_WORKSPACE".to_string(), ws.display().to_string());
+            put("WORKSPACE", ws.display().to_string());
         }
         if let Some(ref model) = self.model {
-            env.insert("DEEPSEEK_MODEL".to_string(), model.clone());
+            put("MODEL", model.clone());
         }
         if let Some(tokens) = self.total_tokens {
-            env.insert("DEEPSEEK_TOTAL_TOKENS".to_string(), tokens.to_string());
+            put("TOTAL_TOKENS", tokens.to_string());
         }
         if let Some(cost) = self.session_cost {
-            env.insert("DEEPSEEK_SESSION_COST".to_string(), format!("{cost:.6}"));
+            put("SESSION_COST", format!("{cost:.6}"));
         }
 
         env
@@ -866,11 +879,19 @@ NOEQUAL line dropped
 
         let env = ctx.to_env_vars();
 
+        // Both the new HAMMERSTEIN_* prefix and the legacy DEEPSEEK_*
+        // alias should resolve to the same value.
+        assert_eq!(
+            env.get("HAMMERSTEIN_TOOL_NAME"),
+            Some(&"exec_shell".to_string())
+        );
         assert_eq!(
             env.get("DEEPSEEK_TOOL_NAME"),
             Some(&"exec_shell".to_string())
         );
+        assert_eq!(env.get("HAMMERSTEIN_MODE"), Some(&"agent".to_string()));
         assert_eq!(env.get("DEEPSEEK_MODE"), Some(&"agent".to_string()));
+        assert_eq!(env.get("HAMMERSTEIN_WORKSPACE"), Some(&"/tmp".to_string()));
         assert_eq!(env.get("DEEPSEEK_WORKSPACE"), Some(&"/tmp".to_string()));
     }
 

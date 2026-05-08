@@ -15,7 +15,7 @@ pub fn set_verbose(enabled: bool) {
 /// Return true when supported env logging knobs request verbose output.
 #[must_use]
 pub fn env_requests_verbose_logging() -> bool {
-    std::env::var("DEEPSEEK_LOG_LEVEL")
+    crate::env_alias::var("HAMMERSTEIN_LOG_LEVEL", "DEEPSEEK_LOG_LEVEL")
         .ok()
         .is_some_and(|value| log_value_enables_verbose(&value))
         || std::env::var("RUST_LOG")

@@ -1735,7 +1735,7 @@ fn canonicalize_or_keep(path: &Path) -> PathBuf {
 }
 
 fn env_config_path() -> Option<PathBuf> {
-    if let Ok(path) = std::env::var("DEEPSEEK_CONFIG_PATH") {
+    if let Ok(path) = crate::env_alias::var("HAMMERSTEIN_CONFIG_PATH", "DEEPSEEK_CONFIG_PATH") {
         let trimmed = path.trim();
         if !trimmed.is_empty() {
             return Some(expand_path(trimmed));
@@ -1868,10 +1868,10 @@ fn default_memory_path() -> Option<PathBuf> {
 // === Environment Overrides ===
 
 fn apply_env_overrides(config: &mut Config) {
-    if let Ok(value) = std::env::var("DEEPSEEK_PROVIDER") {
+    if let Ok(value) = crate::env_alias::var("HAMMERSTEIN_PROVIDER", "DEEPSEEK_PROVIDER") {
         config.provider = Some(value);
     }
-    if let Ok(value) = std::env::var("DEEPSEEK_BASE_URL") {
+    if let Ok(value) = crate::env_alias::var("HAMMERSTEIN_BASE_URL", "DEEPSEEK_BASE_URL") {
         match config.api_provider() {
             ApiProvider::NvidiaNim => {
                 config
@@ -1966,7 +1966,7 @@ fn apply_env_overrides(config: &mut Config) {
             .vllm
             .base_url = Some(value);
     }
-    if let Ok(value) = std::env::var("DEEPSEEK_HTTP_HEADERS")
+    if let Ok(value) = crate::env_alias::var("HAMMERSTEIN_HTTP_HEADERS", "DEEPSEEK_HTTP_HEADERS")
         && let Ok(headers) = parse_http_headers(&value)
         && !headers.is_empty()
     {
@@ -2025,7 +2025,7 @@ fn apply_env_overrides(config: &mut Config) {
         config.default_text_model = Some(value);
     }
     if let Ok(value) =
-        std::env::var("DEEPSEEK_MODEL").or_else(|_| std::env::var("DEEPSEEK_DEFAULT_TEXT_MODEL"))
+        crate::env_alias::var("HAMMERSTEIN_MODEL", "DEEPSEEK_MODEL").or_else(|_| crate::env_alias::var("HAMMERSTEIN_DEFAULT_TEXT_MODEL", "DEEPSEEK_DEFAULT_TEXT_MODEL"))
     {
         config.default_text_model = Some(value);
     }
@@ -2034,19 +2034,19 @@ fn apply_env_overrides(config: &mut Config) {
     {
         config.default_text_model = Some(value);
     }
-    if let Ok(value) = std::env::var("DEEPSEEK_SKILLS_DIR") {
+    if let Ok(value) = crate::env_alias::var("HAMMERSTEIN_SKILLS_DIR", "DEEPSEEK_SKILLS_DIR") {
         config.skills_dir = Some(value);
     }
-    if let Ok(value) = std::env::var("DEEPSEEK_MCP_CONFIG") {
+    if let Ok(value) = crate::env_alias::var("HAMMERSTEIN_MCP_CONFIG", "DEEPSEEK_MCP_CONFIG") {
         config.mcp_config_path = Some(value);
     }
-    if let Ok(value) = std::env::var("DEEPSEEK_NOTES_PATH") {
+    if let Ok(value) = crate::env_alias::var("HAMMERSTEIN_NOTES_PATH", "DEEPSEEK_NOTES_PATH") {
         config.notes_path = Some(value);
     }
-    if let Ok(value) = std::env::var("DEEPSEEK_MEMORY_PATH") {
+    if let Ok(value) = crate::env_alias::var("HAMMERSTEIN_MEMORY_PATH", "DEEPSEEK_MEMORY_PATH") {
         config.memory_path = Some(value);
     }
-    if let Ok(value) = std::env::var("DEEPSEEK_MEMORY") {
+    if let Ok(value) = crate::env_alias::var("HAMMERSTEIN_MEMORY", "DEEPSEEK_MEMORY") {
         let on = matches!(
             value.trim().to_ascii_lowercase().as_str(),
             "1" | "on" | "true" | "yes" | "y" | "enabled"
@@ -2056,31 +2056,31 @@ fn apply_env_overrides(config: &mut Config) {
             .get_or_insert_with(MemoryConfig::default)
             .enabled = Some(on);
     }
-    if let Ok(value) = std::env::var("DEEPSEEK_ALLOW_SHELL") {
+    if let Ok(value) = crate::env_alias::var("HAMMERSTEIN_ALLOW_SHELL", "DEEPSEEK_ALLOW_SHELL") {
         config.allow_shell = Some(value == "1" || value.eq_ignore_ascii_case("true"));
     }
-    if let Ok(value) = std::env::var("DEEPSEEK_APPROVAL_POLICY") {
+    if let Ok(value) = crate::env_alias::var("HAMMERSTEIN_APPROVAL_POLICY", "DEEPSEEK_APPROVAL_POLICY") {
         config.approval_policy = Some(value);
     }
-    if let Ok(value) = std::env::var("DEEPSEEK_SANDBOX_MODE") {
+    if let Ok(value) = crate::env_alias::var("HAMMERSTEIN_SANDBOX_MODE", "DEEPSEEK_SANDBOX_MODE") {
         config.sandbox_mode = Some(value);
     }
-    if let Ok(value) = std::env::var("DEEPSEEK_SANDBOX_BACKEND") {
+    if let Ok(value) = crate::env_alias::var("HAMMERSTEIN_SANDBOX_BACKEND", "DEEPSEEK_SANDBOX_BACKEND") {
         config.sandbox_backend = Some(value);
     }
-    if let Ok(value) = std::env::var("DEEPSEEK_SANDBOX_URL") {
+    if let Ok(value) = crate::env_alias::var("HAMMERSTEIN_SANDBOX_URL", "DEEPSEEK_SANDBOX_URL") {
         config.sandbox_url = Some(value);
     }
-    if let Ok(value) = std::env::var("DEEPSEEK_SANDBOX_API_KEY") {
+    if let Ok(value) = crate::env_alias::var("HAMMERSTEIN_SANDBOX_API_KEY", "DEEPSEEK_SANDBOX_API_KEY") {
         config.sandbox_api_key = Some(value);
     }
-    if let Ok(value) = std::env::var("DEEPSEEK_MANAGED_CONFIG_PATH") {
+    if let Ok(value) = crate::env_alias::var("HAMMERSTEIN_MANAGED_CONFIG_PATH", "DEEPSEEK_MANAGED_CONFIG_PATH") {
         config.managed_config_path = Some(value);
     }
-    if let Ok(value) = std::env::var("DEEPSEEK_REQUIREMENTS_PATH") {
+    if let Ok(value) = crate::env_alias::var("HAMMERSTEIN_REQUIREMENTS_PATH", "DEEPSEEK_REQUIREMENTS_PATH") {
         config.requirements_path = Some(value);
     }
-    if let Ok(value) = std::env::var("DEEPSEEK_MAX_SUBAGENTS")
+    if let Ok(value) = crate::env_alias::var("HAMMERSTEIN_MAX_SUBAGENTS", "DEEPSEEK_MAX_SUBAGENTS")
         && let Ok(parsed) = value.parse::<usize>()
     {
         config.max_subagents = Some(parsed.clamp(1, MAX_SUBAGENTS));
@@ -2104,76 +2104,76 @@ fn apply_env_overrides(config: &mut Config) {
         fallback_default_prior: None,
     });
 
-    if let Ok(value) = std::env::var("DEEPSEEK_CAPACITY_ENABLED") {
+    if let Ok(value) = crate::env_alias::var("HAMMERSTEIN_CAPACITY_ENABLED", "DEEPSEEK_CAPACITY_ENABLED") {
         let val = value.trim().to_ascii_lowercase();
         capacity.enabled = Some(matches!(val.as_str(), "1" | "true" | "yes" | "on"));
     }
-    if let Ok(value) = std::env::var("DEEPSEEK_CAPACITY_LOW_RISK_MAX")
+    if let Ok(value) = crate::env_alias::var("HAMMERSTEIN_CAPACITY_LOW_RISK_MAX", "DEEPSEEK_CAPACITY_LOW_RISK_MAX")
         && let Ok(parsed) = value.parse::<f64>()
     {
         capacity.low_risk_max = Some(parsed);
     }
-    if let Ok(value) = std::env::var("DEEPSEEK_CAPACITY_MEDIUM_RISK_MAX")
+    if let Ok(value) = crate::env_alias::var("HAMMERSTEIN_CAPACITY_MEDIUM_RISK_MAX", "DEEPSEEK_CAPACITY_MEDIUM_RISK_MAX")
         && let Ok(parsed) = value.parse::<f64>()
     {
         capacity.medium_risk_max = Some(parsed);
     }
-    if let Ok(value) = std::env::var("DEEPSEEK_CAPACITY_SEVERE_MIN_SLACK")
+    if let Ok(value) = crate::env_alias::var("HAMMERSTEIN_CAPACITY_SEVERE_MIN_SLACK", "DEEPSEEK_CAPACITY_SEVERE_MIN_SLACK")
         && let Ok(parsed) = value.parse::<f64>()
     {
         capacity.severe_min_slack = Some(parsed);
     }
-    if let Ok(value) = std::env::var("DEEPSEEK_CAPACITY_SEVERE_VIOLATION_RATIO")
+    if let Ok(value) = crate::env_alias::var("HAMMERSTEIN_CAPACITY_SEVERE_VIOLATION_RATIO", "DEEPSEEK_CAPACITY_SEVERE_VIOLATION_RATIO")
         && let Ok(parsed) = value.parse::<f64>()
     {
         capacity.severe_violation_ratio = Some(parsed);
     }
-    if let Ok(value) = std::env::var("DEEPSEEK_CAPACITY_REFRESH_COOLDOWN_TURNS")
+    if let Ok(value) = crate::env_alias::var("HAMMERSTEIN_CAPACITY_REFRESH_COOLDOWN_TURNS", "DEEPSEEK_CAPACITY_REFRESH_COOLDOWN_TURNS")
         && let Ok(parsed) = value.parse::<u64>()
     {
         capacity.refresh_cooldown_turns = Some(parsed);
     }
-    if let Ok(value) = std::env::var("DEEPSEEK_CAPACITY_REPLAN_COOLDOWN_TURNS")
+    if let Ok(value) = crate::env_alias::var("HAMMERSTEIN_CAPACITY_REPLAN_COOLDOWN_TURNS", "DEEPSEEK_CAPACITY_REPLAN_COOLDOWN_TURNS")
         && let Ok(parsed) = value.parse::<u64>()
     {
         capacity.replan_cooldown_turns = Some(parsed);
     }
-    if let Ok(value) = std::env::var("DEEPSEEK_CAPACITY_MAX_REPLAY_PER_TURN")
+    if let Ok(value) = crate::env_alias::var("HAMMERSTEIN_CAPACITY_MAX_REPLAY_PER_TURN", "DEEPSEEK_CAPACITY_MAX_REPLAY_PER_TURN")
         && let Ok(parsed) = value.parse::<usize>()
     {
         capacity.max_replay_per_turn = Some(parsed);
     }
-    if let Ok(value) = std::env::var("DEEPSEEK_CAPACITY_MIN_TURNS_BEFORE_GUARDRAIL")
+    if let Ok(value) = crate::env_alias::var("HAMMERSTEIN_CAPACITY_MIN_TURNS_BEFORE_GUARDRAIL", "DEEPSEEK_CAPACITY_MIN_TURNS_BEFORE_GUARDRAIL")
         && let Ok(parsed) = value.parse::<u64>()
     {
         capacity.min_turns_before_guardrail = Some(parsed);
     }
-    if let Ok(value) = std::env::var("DEEPSEEK_CAPACITY_PROFILE_WINDOW")
+    if let Ok(value) = crate::env_alias::var("HAMMERSTEIN_CAPACITY_PROFILE_WINDOW", "DEEPSEEK_CAPACITY_PROFILE_WINDOW")
         && let Ok(parsed) = value.parse::<usize>()
     {
         capacity.profile_window = Some(parsed);
     }
-    if let Ok(value) = std::env::var("DEEPSEEK_CAPACITY_PRIOR_CHAT")
+    if let Ok(value) = crate::env_alias::var("HAMMERSTEIN_CAPACITY_PRIOR_CHAT", "DEEPSEEK_CAPACITY_PRIOR_CHAT")
         && let Ok(parsed) = value.parse::<f64>()
     {
         capacity.deepseek_v3_2_chat_prior = Some(parsed);
     }
-    if let Ok(value) = std::env::var("DEEPSEEK_CAPACITY_PRIOR_REASONER")
+    if let Ok(value) = crate::env_alias::var("HAMMERSTEIN_CAPACITY_PRIOR_REASONER", "DEEPSEEK_CAPACITY_PRIOR_REASONER")
         && let Ok(parsed) = value.parse::<f64>()
     {
         capacity.deepseek_v3_2_reasoner_prior = Some(parsed);
     }
-    if let Ok(value) = std::env::var("DEEPSEEK_CAPACITY_PRIOR_V4_PRO")
+    if let Ok(value) = crate::env_alias::var("HAMMERSTEIN_CAPACITY_PRIOR_V4_PRO", "DEEPSEEK_CAPACITY_PRIOR_V4_PRO")
         && let Ok(parsed) = value.parse::<f64>()
     {
         capacity.deepseek_v4_pro_prior = Some(parsed);
     }
-    if let Ok(value) = std::env::var("DEEPSEEK_CAPACITY_PRIOR_V4_FLASH")
+    if let Ok(value) = crate::env_alias::var("HAMMERSTEIN_CAPACITY_PRIOR_V4_FLASH", "DEEPSEEK_CAPACITY_PRIOR_V4_FLASH")
         && let Ok(parsed) = value.parse::<f64>()
     {
         capacity.deepseek_v4_flash_prior = Some(parsed);
     }
-    if let Ok(value) = std::env::var("DEEPSEEK_CAPACITY_PRIOR_FALLBACK")
+    if let Ok(value) = crate::env_alias::var("HAMMERSTEIN_CAPACITY_PRIOR_FALLBACK", "DEEPSEEK_CAPACITY_PRIOR_FALLBACK")
         && let Ok(parsed) = value.parse::<f64>()
     {
         capacity.fallback_default_prior = Some(parsed);
@@ -2859,7 +2859,7 @@ reasoning_effort = "max"
 /// this wrong made users get prompted for credentials in situations
 /// where normal env/config auth was already available.
 pub fn has_api_key(config: &Config) -> bool {
-    if std::env::var("DEEPSEEK_API_KEY").is_ok_and(|k| !k.trim().is_empty()) {
+    if crate::env_alias::var("HAMMERSTEIN_API_KEY", "DEEPSEEK_API_KEY").is_ok_and(|k| !k.trim().is_empty()) {
         return true;
     }
     if config
@@ -2895,7 +2895,7 @@ pub fn active_provider_has_config_api_key(config: &Config) -> bool {
 pub fn active_provider_has_env_api_key(config: &Config) -> bool {
     match config.api_provider() {
         ApiProvider::Deepseek | ApiProvider::DeepseekCN => {
-            std::env::var("DEEPSEEK_API_KEY").is_ok_and(|k| !k.trim().is_empty())
+            crate::env_alias::var("HAMMERSTEIN_API_KEY", "DEEPSEEK_API_KEY").is_ok_and(|k| !k.trim().is_empty())
         }
         ApiProvider::NvidiaNim => {
             std::env::var("NVIDIA_API_KEY").is_ok_and(|k| !k.trim().is_empty())

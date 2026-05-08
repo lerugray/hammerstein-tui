@@ -824,7 +824,7 @@ fn print_human(rollup: &Rollup) {
 
 fn deepseek_home() -> PathBuf {
     // Respect DEEPSEEK_HOME env override; fall back to ~/.deepseek.
-    if let Ok(v) = std::env::var("DEEPSEEK_HOME")
+    if let Ok(v) = crate::env_alias::var("HAMMERSTEIN_HOME", "DEEPSEEK_HOME")
         && !v.is_empty()
     {
         return PathBuf::from(v);

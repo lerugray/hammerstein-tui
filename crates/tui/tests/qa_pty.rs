@@ -23,16 +23,16 @@ const KEY_TIMEOUT: Duration = Duration::from_secs(5);
 
 fn boot_minimal() -> anyhow::Result<(qa_harness::harness::SealedWorkspace, Harness)> {
     let ws = make_sealed_workspace()?;
-    let h = Harness::builder(Harness::cargo_bin("deepseek-tui"))
+    let h = Harness::builder(Harness::cargo_bin("hammerstein-tui"))
         .cwd(ws.workspace())
         .seal_home(ws.home())
         // Provide a stub key so the onboarding screen is bypassed and the TUI
         // boots straight into the composer. The harness never makes a live
         // request — we just need the binary to think a key exists.
-        .env("DEEPSEEK_API_KEY", "ci-test-key-not-real")
+        .env("HAMMERSTEIN_API_KEY", "ci-test-key-not-real")
         // Force a known base URL so the doctor / model probe never escapes
         // the box. 127.0.0.1:1 will refuse instantly.
-        .env("DEEPSEEK_BASE_URL", "http://127.0.0.1:1")
+        .env("HAMMERSTEIN_BASE_URL", "http://127.0.0.1:1")
         .env("RUST_LOG", "warn")
         .args([
             "--workspace",

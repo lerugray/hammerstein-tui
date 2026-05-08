@@ -5,9 +5,18 @@ set -euo pipefail
 # Set terminal title
 printf '\033]0;Hammerstein TUI\007'
 
-# Config and env
-export DEEPSEEK_CONFIG_PATH="${HAMMERSTEIN_CONFIG_PATH:-$HOME/.hammerstein/tui/config.toml}"
+# Config path: prefer HAMMERSTEIN_CONFIG_PATH, default to ~/.hammerstein/tui/.
+# Set both new + legacy names so an upstream `deepseek-tui` binary
+# fallback (line 23) finds the same path. The native binary reads the
+# new name first via env_alias::var, so the duplicate is a no-op there.
+HAMMERSTEIN_CONFIG_PATH_VAL="${HAMMERSTEIN_CONFIG_PATH:-${DEEPSEEK_CONFIG_PATH:-$HOME/.hammerstein/tui/config.toml}}"
+export HAMMERSTEIN_CONFIG_PATH="$HAMMERSTEIN_CONFIG_PATH_VAL"
+export DEEPSEEK_CONFIG_PATH="$HAMMERSTEIN_CONFIG_PATH_VAL"
 export HAMMERSTEIN_THEME=1
+
+# Forward HAMMERSTEIN_* → DEEPSEEK_* for the upstream-binary fallback path.
+# The native binary reads HAMMERSTEIN_* directly so the second export is
+# a harmless duplicate there.
 [ -n "${HAMMERSTEIN_API_KEY:-}" ] && export DEEPSEEK_API_KEY="$HAMMERSTEIN_API_KEY"
 [ -n "${HAMMERSTEIN_MODEL:-}" ] && export DEEPSEEK_MODEL="$HAMMERSTEIN_MODEL"
 [ -n "${HAMMERSTEIN_PROVIDER:-}" ] && export DEEPSEEK_PROVIDER="$HAMMERSTEIN_PROVIDER"

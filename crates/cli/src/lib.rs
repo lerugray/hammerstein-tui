@@ -1,3 +1,4 @@
+mod env_alias;
 mod metrics;
 mod update;
 
@@ -1388,9 +1389,17 @@ fn build_tui_command(
         );
     }
 
-    cmd.env("DEEPSEEK_MODEL", &resolved_runtime.model);
-    cmd.env("DEEPSEEK_BASE_URL", &resolved_runtime.base_url);
-    cmd.env("DEEPSEEK_PROVIDER", resolved_runtime.provider.as_str());
+    // Set both `HAMMERSTEIN_*` and the legacy `DEEPSEEK_*` so the spawned
+    // TUI can pick up either form during the rebrand transition. Local
+    // closure to keep the call sites readable.
+    let put = |cmd: &mut Command, suffix: &str, value: &str| {
+        cmd.env(format!("HAMMERSTEIN_{suffix}"), value);
+        cmd.env(format!("DEEPSEEK_{suffix}"), value);
+    };
+
+    put(&mut cmd, "MODEL", &resolved_runtime.model);
+    put(&mut cmd, "BASE_URL", &resolved_runtime.base_url);
+    put(&mut cmd, "PROVIDER", resolved_runtime.provider.as_str());
     if !resolved_runtime.http_headers.is_empty() {
         let encoded = resolved_runtime
             .http_headers
@@ -1398,10 +1407,10 @@ fn build_tui_command(
             .map(|(name, value)| format!("{}={}", name.trim(), value.trim()))
             .collect::<Vec<_>>()
             .join(",");
-        cmd.env("DEEPSEEK_HTTP_HEADERS", encoded);
+        put(&mut cmd, "HTTP_HEADERS", &encoded);
     }
     if let Some(api_key) = resolved_runtime.api_key.as_ref() {
-        cmd.env("DEEPSEEK_API_KEY", api_key);
+        put(&mut cmd, "API_KEY", api_key);
         if resolved_runtime.provider == ProviderKind::Openai {
             cmd.env("OPENAI_API_KEY", api_key);
         }
@@ -1409,36 +1418,36 @@ fn build_tui_command(
             .api_key_source
             .unwrap_or(RuntimeApiKeySource::Env)
             .as_env_value();
-        cmd.env("DEEPSEEK_API_KEY_SOURCE", source);
+        put(&mut cmd, "API_KEY_SOURCE", source);
     }
 
     if let Some(model) = cli.model.as_ref() {
-        cmd.env("DEEPSEEK_MODEL", model);
+        put(&mut cmd, "MODEL", model);
     }
     if let Some(output_mode) = cli.output_mode.as_ref() {
-        cmd.env("DEEPSEEK_OUTPUT_MODE", output_mode);
+        put(&mut cmd, "OUTPUT_MODE", output_mode);
     }
     if let Some(log_level) = cli.log_level.as_ref() {
-        cmd.env("DEEPSEEK_LOG_LEVEL", log_level);
+        put(&mut cmd, "LOG_LEVEL", log_level);
     }
     if let Some(telemetry) = cli.telemetry {
-        cmd.env("DEEPSEEK_TELEMETRY", telemetry.to_string());
+        put(&mut cmd, "TELEMETRY", &telemetry.to_string());
     }
     if let Some(policy) = cli.approval_policy.as_ref() {
-        cmd.env("DEEPSEEK_APPROVAL_POLICY", policy);
+        put(&mut cmd, "APPROVAL_POLICY", policy);
     }
     if let Some(mode) = cli.sandbox_mode.as_ref() {
-        cmd.env("DEEPSEEK_SANDBOX_MODE", mode);
+        put(&mut cmd, "SANDBOX_MODE", mode);
     }
     if let Some(api_key) = cli.api_key.as_ref() {
-        cmd.env("DEEPSEEK_API_KEY", api_key);
+        put(&mut cmd, "API_KEY", api_key);
         if resolved_runtime.provider == ProviderKind::Openai {
             cmd.env("OPENAI_API_KEY", api_key);
         }
-        cmd.env("DEEPSEEK_API_KEY_SOURCE", "cli");
+        put(&mut cmd, "API_KEY_SOURCE", "cli");
     }
     if let Some(base_url) = cli.base_url.as_ref() {
-        cmd.env("DEEPSEEK_BASE_URL", base_url);
+        put(&mut cmd, "BASE_URL", base_url);
     }
 
     Ok(cmd)
@@ -1490,7 +1499,7 @@ binary.",
 /// the suffix-less name as a fallback for users who already manually
 /// renamed the file before this fix landed.
 fn locate_sibling_tui_binary() -> Result<PathBuf> {
-    if let Ok(override_path) = std::env::var("DEEPSEEK_TUI_BIN") {
+    if let Ok(override_path) = crate::env_alias::var("HAMMERSTEIN_TUI_BIN", "DEEPSEEK_TUI_BIN") {
         let candidate = PathBuf::from(override_path);
         if candidate.is_file() {
             return Ok(candidate);

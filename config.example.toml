@@ -114,10 +114,11 @@ sandbox_mode = "workspace-write" # read-only | workspace-write | danger-full-acc
 # sandbox_url = "http://localhost:8080"  # OpenSandbox-compatible API base URL
 # sandbox_api_key = "YOUR_API_KEY"  # Optional Bearer token sent with requests
 #
-# Env-var overrides:
-#   DEEPSEEK_SANDBOX_BACKEND   → sandbox_backend
-#   DEEPSEEK_SANDBOX_URL       → sandbox_url
-#   DEEPSEEK_SANDBOX_API_KEY   → sandbox_api_key
+# Env-var overrides (legacy DEEPSEEK_* aliases also accepted with a
+# deprecation warning):
+#   HAMMERSTEIN_SANDBOX_BACKEND   → sandbox_backend
+#   HAMMERSTEIN_SANDBOX_URL       → sandbox_url
+#   HAMMERSTEIN_SANDBOX_API_KEY   → sandbox_api_key
 #
 # Example OpenSandbox setup:
 #
@@ -155,7 +156,8 @@ max_subagents = 10 # optional (1-20)
 # `/provider deepseek` / `/provider nvidia-nim` / `--provider openai` /
 # `/provider fireworks` switches between them without
 # having to re-enter keys. Env vars override anything set here:
-#   DeepSeek: DEEPSEEK_API_KEY, DEEPSEEK_BASE_URL, DEEPSEEK_MODEL
+#   DeepSeek: HAMMERSTEIN_API_KEY, HAMMERSTEIN_BASE_URL, HAMMERSTEIN_MODEL
+#             (legacy DEEPSEEK_* aliases also accepted with a deprecation warning)
 #   NIM:      NVIDIA_API_KEY (or NVIDIA_NIM_API_KEY), NIM_BASE_URL
 #             (or NVIDIA_NIM_BASE_URL / NVIDIA_BASE_URL), NVIDIA_NIM_MODEL
 #   OpenAI-compatible: OPENAI_API_KEY, OPENAI_BASE_URL, OPENAI_MODEL
@@ -354,7 +356,8 @@ fallback_default_prior = 3.8
 # ─────────────────────────────────────────────────────────────────────────────────
 # Profile Example (for multiple environments)
 # ─────────────────────────────────────────────────────────────────────────────────
-# Select a profile with `deepseek --profile <name>` or `DEEPSEEK_PROFILE=<name>`.
+# Select a profile with `hamt --profile <name>` or `HAMMERSTEIN_PROFILE=<name>`
+# (legacy `DEEPSEEK_PROFILE` also accepted with a deprecation warning).
 [profiles.work]
 api_key = "WORK_DEEPSEEK_API_KEY"
 base_url = "https://api.deepseek.com/beta"
@@ -495,7 +498,8 @@ default_text_model = "deepseek-ai/deepseek-v4-pro"
 # Use `cors_origins` to add extra dev origins (e.g. Vite's default `:5173`).
 # User entries STACK on top of the defaults — they do not replace them. The
 # CLI flag `--cors-origin URL` (repeatable) and env var
-# `DEEPSEEK_CORS_ORIGINS=url1,url2` resolve to the same merged list.
+# `HAMMERSTEIN_CORS_ORIGINS=url1,url2` (or legacy `DEEPSEEK_CORS_ORIGINS`)
+# resolve to the same merged list.
 #
 # [runtime_api]
 # cors_origins = ["http://localhost:5173", "http://127.0.0.1:5173"]

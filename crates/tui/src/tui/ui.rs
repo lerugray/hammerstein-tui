@@ -548,6 +548,7 @@ fn build_engine_config(app: &App, config: &Config) -> EngineConfig {
         goal_objective: app.goal.goal_objective.clone(),
         locale_tag: app.ui_locale.tag().to_string(),
         workshop: config.workshop.clone(),
+        sandbox_extra_writable_roots: config.sandbox_writable_roots(),
     }
 }
 

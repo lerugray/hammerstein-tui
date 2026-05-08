@@ -1842,6 +1842,7 @@ impl RuntimeThreadManager {
             .tag()
             .to_string(),
             workshop: self.config.workshop.clone(),
+            sandbox_extra_writable_roots: self.config.sandbox_writable_roots(),
         };
 
         let engine = spawn_engine(engine_cfg, &self.config);

@@ -2,7 +2,7 @@
 //!
 //! This keeps mode/feature-specific registry construction out of the send path.
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use super::*;
 use crate::sandbox::SandboxPolicy;
@@ -13,21 +13,37 @@ use crate::sandbox::SandboxPolicy;
 ///   `WorkspaceWrite` policy let `python -c "open('f','w').write('x')"` mutate
 ///   files inside the workspace because it whitelisted the workspace as
 ///   writable. Plan mode is investigation only; if the user wants to change
-///   files they should switch to Agent.
+///   files they should switch to Agent. `extra_writable_roots` is intentionally
+///   **ignored** here — Plan mode is the strict envelope by contract.
 /// - **Agent**: `WorkspaceWrite` with workspace as writable root and network
-///   on. Approval flow gates risky individual commands; the sandbox handles
-///   the rest. Network is allowed because cargo / npm / curl-style commands
-///   are normal during agent work and DNS-deny breaks them silently.
+///   on. `extra_writable_roots` (sourced from `Config::sandbox_writable_roots`)
+///   is concatenated onto the workspace root so users can permit cross-repo
+///   writes from a session whose workspace is *not* the repo being operated
+///   on (e.g. a fleet-dispatcher session). Approval flow gates risky
+///   individual commands; the sandbox handles the rest. Network is allowed
+///   because cargo / npm / curl-style commands are normal during agent work
+///   and DNS-deny breaks them silently.
 /// - **YOLO**: `DangerFullAccess` — explicit no-guardrails contract.
-pub(crate) fn sandbox_policy_for_mode(mode: AppMode, workspace: &Path) -> SandboxPolicy {
+///   `extra_writable_roots` is ignored here too because Yolo already grants
+///   full disk access.
+pub(crate) fn sandbox_policy_for_mode(
+    mode: AppMode,
+    workspace: &Path,
+    extra_writable_roots: &[PathBuf],
+) -> SandboxPolicy {
     match mode {
         AppMode::Plan => SandboxPolicy::ReadOnly,
-        AppMode::Agent => SandboxPolicy::WorkspaceWrite {
-            writable_roots: vec![workspace.to_path_buf()],
-            network_access: true,
-            exclude_tmpdir: false,
-            exclude_slash_tmp: false,
-        },
+        AppMode::Agent => {
+            let mut writable_roots = Vec::with_capacity(1 + extra_writable_roots.len());
+            writable_roots.push(workspace.to_path_buf());
+            writable_roots.extend(extra_writable_roots.iter().cloned());
+            SandboxPolicy::WorkspaceWrite {
+                writable_roots,
+                network_access: true,
+                exclude_tmpdir: false,
+                exclude_slash_tmp: false,
+            }
+        }
         AppMode::Yolo => SandboxPolicy::DangerFullAccess,
     }
 }

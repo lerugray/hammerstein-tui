@@ -153,6 +153,12 @@ pub struct EngineConfig {
     pub strict_tool_mode: bool,
     /// Workshop / large-tool-output routing (#548). `None` disables routing.
     pub workshop: Option<crate::tools::large_output_router::WorkshopConfig>,
+    /// Extra writable roots layered onto the Agent-mode `WorkspaceWrite`
+    /// policy in addition to the workspace, /tmp, and TMPDIR. Sourced
+    /// from `Config::sandbox_writable_roots` (config file / env var /
+    /// `--writable-root`). Plan mode and Yolo mode are unaffected.
+    /// Empty `Vec` preserves the historical workspace-only envelope.
+    pub sandbox_extra_writable_roots: Vec<PathBuf>,
 }
 
 impl Default for EngineConfig {
@@ -186,6 +192,7 @@ impl Default for EngineConfig {
             goal_objective: None,
             locale_tag: "en".to_string(),
             workshop: None,
+            sandbox_extra_writable_roots: Vec::new(),
         }
     }
 }
@@ -1500,7 +1507,11 @@ impl Engine {
             ctx = ctx.with_sandbox_backend(std::sync::Arc::clone(backend));
         }
 
-        let policy = sandbox_policy_for_mode(mode, &self.session.workspace);
+        let policy = sandbox_policy_for_mode(
+            mode,
+            &self.session.workspace,
+            &self.config.sandbox_extra_writable_roots,
+        );
         let mut ctx = ctx.with_elevated_sandbox_policy(policy);
         if matches!(mode, AppMode::Plan) {
             ctx = ctx.with_shell_network_denied_hint(

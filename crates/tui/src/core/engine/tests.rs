@@ -539,15 +539,16 @@ fn sandbox_policy_for_mode_returns_correct_policy_per_mode() {
     use crate::sandbox::SandboxPolicy;
 
     let workspace = PathBuf::from("/tmp/example-workspace");
+    let no_extra: &[PathBuf] = &[];
 
     // Plan: ReadOnly. The whole point of #1077.
     assert!(matches!(
-        sandbox_policy_for_mode(AppMode::Plan, &workspace),
+        sandbox_policy_for_mode(AppMode::Plan, &workspace, no_extra),
         SandboxPolicy::ReadOnly
     ));
 
     // Agent: WorkspaceWrite with workspace as writable root, network on.
-    match sandbox_policy_for_mode(AppMode::Agent, &workspace) {
+    match sandbox_policy_for_mode(AppMode::Agent, &workspace, no_extra) {
         SandboxPolicy::WorkspaceWrite {
             writable_roots,
             network_access,
@@ -561,7 +562,60 @@ fn sandbox_policy_for_mode_returns_correct_policy_per_mode() {
 
     // YOLO: DangerFullAccess.
     assert!(matches!(
-        sandbox_policy_for_mode(AppMode::Yolo, &workspace),
+        sandbox_policy_for_mode(AppMode::Yolo, &workspace, no_extra),
+        SandboxPolicy::DangerFullAccess
+    ));
+}
+
+#[test]
+fn sandbox_policy_for_mode_appends_extra_writable_roots_in_agent() {
+    use super::tool_setup::sandbox_policy_for_mode;
+    use crate::sandbox::SandboxPolicy;
+
+    let workspace = PathBuf::from("/tmp/example-workspace");
+    let extras = vec![
+        PathBuf::from("/tmp/sibling-repo-a"),
+        PathBuf::from("/tmp/sibling-repo-b"),
+    ];
+
+    // Agent: workspace stays first, extras are appended in declared order.
+    match sandbox_policy_for_mode(AppMode::Agent, &workspace, &extras) {
+        SandboxPolicy::WorkspaceWrite {
+            writable_roots,
+            network_access,
+            ..
+        } => {
+            assert_eq!(
+                writable_roots,
+                vec![
+                    workspace.clone(),
+                    PathBuf::from("/tmp/sibling-repo-a"),
+                    PathBuf::from("/tmp/sibling-repo-b"),
+                ]
+            );
+            assert!(network_access);
+        }
+        other => panic!("Agent mode should be WorkspaceWrite; got {other:?}"),
+    }
+}
+
+#[test]
+fn sandbox_policy_for_mode_extras_are_ignored_in_plan_and_yolo() {
+    use super::tool_setup::sandbox_policy_for_mode;
+    use crate::sandbox::SandboxPolicy;
+
+    let workspace = PathBuf::from("/tmp/example-workspace");
+    let extras = vec![PathBuf::from("/tmp/should-not-appear")];
+
+    // Plan: extras are intentionally ignored — strict by contract.
+    assert!(matches!(
+        sandbox_policy_for_mode(AppMode::Plan, &workspace, &extras),
+        SandboxPolicy::ReadOnly
+    ));
+
+    // Yolo: already full access, extras are a no-op.
+    assert!(matches!(
+        sandbox_policy_for_mode(AppMode::Yolo, &workspace, &extras),
         SandboxPolicy::DangerFullAccess
     ));
 }

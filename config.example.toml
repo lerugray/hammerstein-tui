@@ -101,6 +101,29 @@ allow_shell = true
 approval_policy = "on-request" # on-request | untrusted | never
 sandbox_mode = "workspace-write" # read-only | workspace-write | danger-full-access | external-sandbox
 
+# Extra directories where the Agent-mode shell tool may write, in addition to
+# the workspace, /tmp, and TMPDIR. Use this to permit cross-repo `git pull` /
+# writes from a session whose workspace is *not* the repo being operated on.
+#
+# BLAST RADIUS: every entry is full read+write inside that subtree for any
+# command the agent decides to run. Treat each entry like sudo. Prefer narrow,
+# individually-listed paths over broad parents like `~/code` or `~`. Don't list
+# directories with credentials (~/.ssh, ~/.aws, ~/.config, password vaults).
+#
+# Denied at project scope (`<workspace>/.deepseek/config.toml`) so a hostile
+# repo can't grant itself write access to your home dir. User-config / env /
+# CLI flag only.
+#
+# sandbox_writable_roots = [
+#     "~/code/sibling-repo-a",
+#     "~/code/sibling-repo-b",
+# ]
+#
+# Env-var override (colon-separated; legacy alias `DEEPSEEK_SANDBOX_WRITABLE_ROOTS` also accepted):
+#   HAMMERSTEIN_SANDBOX_WRITABLE_ROOTS=/Users/me/code/foo:/Users/me/code/bar
+# CLI flag (repeatable, layers on top of file/env):
+#   hamt --writable-root ~/code/sibling-repo
+
 # ─────────────────────────────────────────────────────────────────────────────────
 # External Sandbox Backend (pluggable remote execution)
 # ─────────────────────────────────────────────────────────────────────────────────

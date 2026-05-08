@@ -779,6 +779,20 @@ pub struct Config {
     pub allow_shell: Option<bool>,
     pub approval_policy: Option<String>,
     pub sandbox_mode: Option<String>,
+    /// Extra directories where the interactive Agent-mode shell tool is
+    /// allowed to write, in addition to the workspace, /tmp, and TMPDIR.
+    ///
+    /// Use this to permit cross-repo `git pull` / writes from a hamt
+    /// session whose workspace is *not* the repo being operated on (e.g.
+    /// a fleet-dispatcher session that fans out to sibling project
+    /// directories). Paths are expanded via `expand_path` so `~` and env
+    /// vars work. Empty / absent means the historical
+    /// "workspace + /tmp + TMPDIR" envelope.
+    ///
+    /// **Blast-radius warning:** every entry is full read+write for any
+    /// shell command the model runs in Agent mode. Prefer narrow,
+    /// individually-listed parent dirs over broad roots like `~`.
+    pub sandbox_writable_roots: Option<Vec<String>>,
     /// External sandbox backend: `"none"` or `"opensandbox"`.
     /// When set, exec_shell routes commands through the backend's HTTP API
     /// instead of spawning a local process.
@@ -1494,6 +1508,24 @@ impl Config {
         self.allow_shell.unwrap_or(true)
     }
 
+    /// Return the resolved extra writable roots for the Agent-mode shell
+    /// tool. `~` and env vars are expanded; empty entries are dropped.
+    /// Empty Vec means the default workspace-only envelope.
+    #[must_use]
+    pub fn sandbox_writable_roots(&self) -> Vec<PathBuf> {
+        self.sandbox_writable_roots
+            .as_ref()
+            .map(|raw| {
+                raw.iter()
+                    .map(String::as_str)
+                    .map(str::trim)
+                    .filter(|s| !s.is_empty())
+                    .map(expand_path)
+                    .collect()
+            })
+            .unwrap_or_default()
+    }
+
     /// Return the maximum number of concurrent sub-agents.
     /// Checks `[subagents] max_concurrent` first, then top-level `max_subagents`,
     /// then falls back to `DEFAULT_MAX_SUBAGENTS`.
@@ -2065,6 +2097,22 @@ fn apply_env_overrides(config: &mut Config) {
     if let Ok(value) = crate::env_alias::var("HAMMERSTEIN_SANDBOX_MODE", "DEEPSEEK_SANDBOX_MODE") {
         config.sandbox_mode = Some(value);
     }
+    // Colon-separated list of extra writable roots for the interactive
+    // Agent-mode shell tool, e.g.
+    // `HAMMERSTEIN_SANDBOX_WRITABLE_ROOTS=/Users/me/Desktop/Dev Work:/Users/me/scratch`
+    // (legacy `DEEPSEEK_SANDBOX_WRITABLE_ROOTS` also works).
+    // Empty entries are dropped so a trailing `:` is harmless.
+    if let Ok(value) = crate::env_alias::var("HAMMERSTEIN_SANDBOX_WRITABLE_ROOTS", "DEEPSEEK_SANDBOX_WRITABLE_ROOTS") {
+        let entries: Vec<String> = value
+            .split(':')
+            .map(str::trim)
+            .filter(|s| !s.is_empty())
+            .map(str::to_string)
+            .collect();
+        if !entries.is_empty() {
+            config.sandbox_writable_roots = Some(entries);
+        }
+    }
     if let Ok(value) = crate::env_alias::var("HAMMERSTEIN_SANDBOX_BACKEND", "DEEPSEEK_SANDBOX_BACKEND") {
         config.sandbox_backend = Some(value);
     }
@@ -2411,6 +2459,9 @@ fn merge_config(base: Config, override_cfg: Config) -> Config {
         allow_shell: override_cfg.allow_shell.or(base.allow_shell),
         approval_policy: override_cfg.approval_policy.or(base.approval_policy),
         sandbox_mode: override_cfg.sandbox_mode.or(base.sandbox_mode),
+        sandbox_writable_roots: override_cfg
+            .sandbox_writable_roots
+            .or(base.sandbox_writable_roots),
         sandbox_backend: override_cfg.sandbox_backend.or(base.sandbox_backend),
         sandbox_url: override_cfg.sandbox_url.or(base.sandbox_url),
         sandbox_api_key: override_cfg.sandbox_api_key.or(base.sandbox_api_key),
@@ -5318,5 +5369,43 @@ model = "deepseek-v4-pro"
         let json = serde_json::to_value(&cap).unwrap();
         let deserialized: ProviderCapability = serde_json::from_value(json).unwrap();
         assert_eq!(cap, deserialized);
+    }
+
+    #[test]
+    fn sandbox_writable_roots_unset_returns_empty() {
+        let cfg = Config::default();
+        assert!(cfg.sandbox_writable_roots().is_empty());
+    }
+
+    #[test]
+    fn sandbox_writable_roots_drops_blank_entries_and_expands_tilde() {
+        let cfg = Config {
+            sandbox_writable_roots: Some(vec![
+                "/tmp/repo-a".to_string(),
+                "  ".to_string(),
+                "".to_string(),
+                "~/some-dir".to_string(),
+            ]),
+            ..Config::default()
+        };
+        let resolved = cfg.sandbox_writable_roots();
+
+        // Blank entries are dropped.
+        assert_eq!(resolved.len(), 2, "blank entries should be filtered out");
+
+        // First entry is unchanged.
+        assert_eq!(resolved[0], PathBuf::from("/tmp/repo-a"));
+
+        // Tilde gets expanded — exact home depends on the test host, but we
+        // assert it no longer starts with `~`.
+        let tilde_resolved = resolved[1].to_string_lossy().into_owned();
+        assert!(
+            !tilde_resolved.starts_with('~'),
+            "tilde should be expanded; got {tilde_resolved}"
+        );
+        assert!(
+            tilde_resolved.ends_with("some-dir"),
+            "expansion should preserve the suffix; got {tilde_resolved}"
+        );
     }
 }

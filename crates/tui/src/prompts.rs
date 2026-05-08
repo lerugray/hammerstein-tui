@@ -615,15 +615,6 @@ mod tests {
     }
 
     #[test]
-    fn package_version_is_current_hotfix_release() {
-        assert_eq!(
-            env!("CARGO_PKG_VERSION"),
-            "0.8.16",
-            "0.8.16 hotfix branch must report the release version before publishing"
-        );
-    }
-
-    #[test]
     fn compose_prompt_deterministic_order() {
         let prompt = compose_prompt(AppMode::Yolo, Personality::Calm);
         let base_pos = prompt.find("You are DeepSeek TUI").unwrap();

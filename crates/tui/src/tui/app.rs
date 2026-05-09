@@ -2965,6 +2965,62 @@ impl App {
         }
     }
 
+    pub fn move_cursor_word_left(&mut self) {
+        // Behavior: move cursor leftward over a single word boundary.
+        // (a) Skip any contiguous whitespace immediately to the left of
+        //     the cursor.
+        // (b) Then skip any contiguous non-whitespace ("word" chars).
+        // Result: cursor lands at the start of the previous word, or at
+        // position 0 if no word lies to the left. If cursor was already
+        // 0, this is a no-op.
+
+        let chars: Vec<char> = self.input.chars().collect();
+        let mut i = self.cursor_position;
+        if i == 0 {
+            return;
+        }
+        // Step (a): skip whitespace leftward
+        while i > 0 && chars[i - 1].is_whitespace() {
+            i -= 1;
+        }
+        // Step (b): skip non-whitespace leftward
+        while i > 0 && !chars[i - 1].is_whitespace() {
+            i -= 1;
+        }
+        if i != self.cursor_position {
+            self.cursor_position = i;
+            self.needs_redraw = true;
+        }
+    }
+
+    pub fn move_cursor_word_right(&mut self) {
+        // Mirror of move_cursor_word_left, in the opposite direction.
+        // (a) Skip any contiguous non-whitespace at-or-after the cursor.
+        // (b) Then skip any contiguous whitespace at-or-after.
+        // Result: cursor lands at the start of the next word, or at the
+        // end of input if no further word exists. If already at end,
+        // no-op.
+
+        let chars: Vec<char> = self.input.chars().collect();
+        let len = char_count(&self.input);
+        let mut i = self.cursor_position;
+        if i >= len {
+            return;
+        }
+        // Step (a): skip non-whitespace rightward
+        while i < len && !chars[i].is_whitespace() {
+            i += 1;
+        }
+        // Step (b): skip whitespace rightward
+        while i < len && chars[i].is_whitespace() {
+            i += 1;
+        }
+        if i != self.cursor_position {
+            self.cursor_position = i;
+            self.needs_redraw = true;
+        }
+    }
+
     pub fn move_cursor_start(&mut self) {
         self.cursor_position = 0;
         self.needs_redraw = true;

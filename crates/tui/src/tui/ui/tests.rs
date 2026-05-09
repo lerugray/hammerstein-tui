@@ -1541,6 +1541,44 @@ fn test_esc_with_input_clears_input_when_not_loading() {
 }
 
 #[test]
+fn test_move_cursor_word_left_skips_word() {
+    let mut app = create_test_app();
+    app.input = "hello world".to_string();
+    app.cursor_position = 11;
+    app.move_cursor_word_left();
+    assert_eq!(app.cursor_position, 6);
+}
+
+#[test]
+fn test_move_cursor_word_left_skips_trailing_whitespace_then_word() {
+    let mut app = create_test_app();
+    app.input = "hello   world".to_string();
+    app.cursor_position = 13;
+    app.move_cursor_word_left();
+    assert_eq!(app.cursor_position, 8);
+}
+
+#[test]
+fn test_move_cursor_word_right_skips_word() {
+    let mut app = create_test_app();
+    app.input = "hello world".to_string();
+    app.cursor_position = 0;
+    app.move_cursor_word_right();
+    assert_eq!(app.cursor_position, 6);
+}
+
+#[test]
+fn test_move_cursor_word_left_at_zero_is_noop() {
+    let mut app = create_test_app();
+    app.input = "hello".to_string();
+    app.cursor_position = 0;
+    app.needs_redraw = false;
+    app.move_cursor_word_left();
+    assert_eq!(app.cursor_position, 0);
+    assert!(!app.needs_redraw);
+}
+
+#[test]
 fn test_esc_discards_queued_draft_before_clearing_input() {
     let mut app = create_test_app();
     app.is_loading = false;

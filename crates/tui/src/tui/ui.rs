@@ -2656,6 +2656,12 @@ async fn run_event_loop(
                     app.delete_char_forward();
                 }
                 KeyCode::Delete => {}
+                KeyCode::Left if key.modifiers.contains(KeyModifiers::ALT) => {
+                    app.move_cursor_word_left();
+                }
+                KeyCode::Right if key.modifiers.contains(KeyModifiers::ALT) => {
+                    app.move_cursor_word_right();
+                }
                 KeyCode::Left => {
                     app.move_cursor_left();
                 }
